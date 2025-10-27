@@ -3,7 +3,7 @@ package br.com.apicomanda.service.impl;
 import br.com.apicomanda.domain.User;
 import br.com.apicomanda.dto.user.CreateUserRequest;
 import br.com.apicomanda.dto.user.UserResponseDTO;
-import br.com.apicomanda.exception.NotFounException;
+import br.com.apicomanda.exception.NotFoundException;
 import br.com.apicomanda.exception.ObjectAlreadyRegisteredException;
 import br.com.apicomanda.repository.UserRepository;
 import br.com.apicomanda.service.ProfileService;
@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDTO findByEmail(String email) {
         return Optional.ofNullable(this.userRepository.findByEmailIgnoreCase(email))
                 .map(UserResponseDTO::new)
-                .orElseThrow(() -> new NotFounException("Usuário não encontrado com o email: " + email));
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado com o email: " + email));
     }
 
     @Override
@@ -53,6 +53,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserById(Long id) {
         return this.userRepository.findById(id)
-                .orElseThrow(() -> new NotFounException("User not found!"));
+                .orElseThrow(() -> new NotFoundException("User not found!"));
     }
 }

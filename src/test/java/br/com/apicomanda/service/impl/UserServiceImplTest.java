@@ -4,7 +4,7 @@ import br.com.apicomanda.domain.Profile;
 import br.com.apicomanda.domain.User;
 import br.com.apicomanda.dto.user.CreateUserRequest;
 import br.com.apicomanda.dto.user.UserResponseDTO;
-import br.com.apicomanda.exception.NotFounException;
+import br.com.apicomanda.exception.NotFoundException;
 import br.com.apicomanda.exception.ObjectAlreadyRegisteredException;
 import br.com.apicomanda.repository.UserRepository;
 import br.com.apicomanda.service.ProfileService;
@@ -115,7 +115,7 @@ class UserServiceImplTest {
 
         when(userRepository.findByEmailIgnoreCase(email)).thenReturn(null);
 
-        assertThrows(NotFounException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             userService.findByEmail(email);
         });
 
@@ -145,7 +145,7 @@ class UserServiceImplTest {
 
         when(userRepository.findById(id)).thenReturn(Optional.empty());
 
-        assertThrows(NotFounException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             userService.getUserById(id);
         });
 

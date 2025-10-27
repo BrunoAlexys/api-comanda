@@ -1,7 +1,7 @@
 package br.com.apicomanda.service.impl;
 
 import br.com.apicomanda.domain.Profile;
-import br.com.apicomanda.exception.NotFounException;
+import br.com.apicomanda.exception.NotFoundException;
 import br.com.apicomanda.repository.ProfileRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,7 +48,7 @@ class ProfileServiceImplTest {
 
         when(repository.findById(nonExistentId)).thenReturn(Optional.empty());
 
-        var exception = assertThrows(NotFounException.class, () -> {
+        var exception = assertThrows(NotFoundException.class, () -> {
             profileService.findProfile(nonExistentId);
         });
 
