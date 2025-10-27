@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres
+    volumes:
+      - ./base-general.sql:/docker-entrypoint-initdb.d/base-general.sql
+    environment:
+      POSTGRES_PASSWORD: "comanda"
+      POSTGRES_USER: "comanda"
+    ports:
+      - "5432:5432"
+  redis:
+    image: redis
+    command: redis-server --requirepass Redis2019!
+    ports:
+      - "6379:6379"
