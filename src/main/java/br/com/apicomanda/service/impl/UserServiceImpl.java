@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDTO findByEmail(String email) {
         return Optional.ofNullable(this.userRepository.findByEmailIgnoreCase(email))
                 .map(UserResponseDTO::new)
-                .orElseThrow(() -> new ObjectAlreadyRegisteredException("Usuário não encontrado com o email: " + email));
+                .orElseThrow(() -> new NotFounException("Usuário não encontrado com o email: " + email));
     }
 
     @Override
@@ -52,7 +52,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserById(Long id) {
-        return this.userRepository.findById(Math.toIntExact(id))
+        return this.userRepository.findById(id)
                 .orElseThrow(() -> new NotFounException("User not found!"));
     }
 }

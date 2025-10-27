@@ -191,7 +191,7 @@ class AuthServiceImplTest {
         assertEquals(newAccessToken, tokenResponse.accessToken());
         assertEquals(newRefreshToken.getToken(), tokenResponse.refreshToken());
 
-        verify(tokenService, times(2)).findByToken(refreshTokenRequest.refreshToken());
+        verify(tokenService, times(1)).findByToken(refreshTokenRequest.refreshToken());
         verify(tokenService, times(1)).verifyExpiration(refreshToken);
         verify(refreshTokenRepository, times(1)).delete(refreshToken);
         verify(tokenService, times(1)).generateToken(any(UserSS.class));

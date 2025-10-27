@@ -115,7 +115,7 @@ class UserServiceImplTest {
 
         when(userRepository.findByEmailIgnoreCase(email)).thenReturn(null);
 
-        assertThrows(ObjectAlreadyRegisteredException.class, () -> {
+        assertThrows(NotFounException.class, () -> {
             userService.findByEmail(email);
         });
 
@@ -128,14 +128,14 @@ class UserServiceImplTest {
         var id = 1L;
         var user = User.builder().id(id).email("test@test.com").build();
 
-        when(userRepository.findById(Math.toIntExact(id))).thenReturn(Optional.of(user));
+        when(userRepository.findById(id)).thenReturn(Optional.of(user));
 
         User result = userService.getUserById(id);
 
         assertNotNull(result);
         assertEquals(id, result.getId());
 
-        verify(userRepository, times(1)).findById(Math.toIntExact(id));
+        verify(userRepository, times(1)).findById(id);
     }
 
     @Test
@@ -143,12 +143,12 @@ class UserServiceImplTest {
     void shouldThrowNotFoundExceptionForNonExistentUserId() {
         var id = 99L;
 
-        when(userRepository.findById(Math.toIntExact(id))).thenReturn(Optional.empty());
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
 
         assertThrows(NotFounException.class, () -> {
             userService.getUserById(id);
         });
 
-        verify(userRepository, times(1)).findById(Math.toIntExact(id));
+        verify(userRepository, times(1)).findById(id);
     }
 }

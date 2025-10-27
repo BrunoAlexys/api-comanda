@@ -2,12 +2,10 @@ package br.com.apicomanda.security;
 
 import br.com.apicomanda.domain.RefreshToken;
 import br.com.apicomanda.domain.User;
-import br.com.apicomanda.dto.auth.TokenResponse;
 import br.com.apicomanda.exception.NotFounException;
 import br.com.apicomanda.exception.TokenRefreshException;
 import br.com.apicomanda.helpers.ApplicationConstants;
 import br.com.apicomanda.repository.RefreshTokenRepository;
-import br.com.apicomanda.repository.UserRepository;
 import br.com.apicomanda.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -16,7 +14,6 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -69,7 +66,7 @@ public class TokenService {
             Claims claims = Jwts.parser()
                     .verifyWith(secretKey)
                     .build()
-                    .parseClaimsJws(token)
+                    .parseSignedClaims(token)
                     .getPayload();
             return claims.getSubject();
         } catch (Exception e) {

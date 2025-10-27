@@ -92,8 +92,9 @@ public class AuthServiceImpl implements AuthService {
     public TokenResponse refreshToken(RefreshTokenDTO request) {
         return tokenService.findByToken(request.refreshToken())
                 .map(tokenService::verifyExpiration)
-                .map(RefreshToken::getUser)
-                .map(user -> {
+                .map(oldToken -> {
+                    User user = oldToken.getUser();
+
                     var authorities = user.getProfiles().stream()
                             .map(profile -> new SimpleGrantedAuthority(profile.getName().toUpperCase()))
                             .collect(Collectors.toList());
@@ -102,7 +103,7 @@ public class AuthServiceImpl implements AuthService {
 
                     String newAccessToken = tokenService.generateToken(userSS);
 
-                    refreshTokenRepository.delete(tokenService.findByToken(request.refreshToken()).get());
+                    refreshTokenRepository.delete(oldToken);
 
                     RefreshToken newRefreshToken = tokenService.createRefreshToken(user.getEmail());
 
