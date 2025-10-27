@@ -16,9 +16,9 @@ import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 @Slf4j
 public class RestExceptionHandler {
 
-    @ExceptionHandler(NotFounException.class)
+    @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ExceptionDetails handlerNotFounException(NotFounException exception) {
+    public ExceptionDetails handlerNotFounException(NotFoundException exception) {
         log.info("NotFoundException: {}", exception.getMessage());
         return ExceptionDetails.builder()
                 .timestamp(LocalDateTime.now())

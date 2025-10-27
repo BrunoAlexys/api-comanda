@@ -2,7 +2,7 @@ package br.com.apicomanda.security;
 
 import br.com.apicomanda.domain.RefreshToken;
 import br.com.apicomanda.domain.User;
-import br.com.apicomanda.exception.NotFounException;
+import br.com.apicomanda.exception.NotFoundException;
 import br.com.apicomanda.exception.TokenRefreshException;
 import br.com.apicomanda.helpers.ApplicationConstants;
 import br.com.apicomanda.repository.RefreshTokenRepository;
@@ -78,7 +78,7 @@ public class TokenService {
         User user = this.userService.getUserByEmail(userEmail);
 
         if (user == null) {
-            throw new NotFounException("User not found");
+            throw new NotFoundException("User not found");
         }
 
         RefreshToken refreshToken = RefreshToken.builder()

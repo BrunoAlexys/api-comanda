@@ -2,7 +2,7 @@ package br.com.apicomanda.security;
 
 import br.com.apicomanda.domain.RefreshToken;
 import br.com.apicomanda.domain.User;
-import br.com.apicomanda.exception.NotFounException;
+import br.com.apicomanda.exception.NotFoundException;
 import br.com.apicomanda.exception.TokenRefreshException;
 import br.com.apicomanda.repository.RefreshTokenRepository;
 import br.com.apicomanda.service.UserService;
@@ -15,7 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.crypto.SecretKey;
@@ -142,7 +141,7 @@ class TokenServiceTest {
     void createRefreshToken_shouldThrowNotFoundExceptionWhenUserDoesNotExist() {
         when(userService.getUserByEmail(anyString())).thenReturn(null);
 
-        assertThrows(NotFounException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             tokenService.createRefreshToken("nonexistent@user.com");
         });
 

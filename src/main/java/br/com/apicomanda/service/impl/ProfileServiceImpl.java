@@ -1,7 +1,7 @@
 package br.com.apicomanda.service.impl;
 
 import br.com.apicomanda.domain.Profile;
-import br.com.apicomanda.exception.NotFounException;
+import br.com.apicomanda.exception.NotFoundException;
 import br.com.apicomanda.repository.ProfileRepository;
 import br.com.apicomanda.service.ProfileService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +16,6 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     public Profile findProfile(Long id) {
         return this.repository.findById(id)
-                .orElseThrow(() -> new NotFounException("Perfil não encontrado"));
+                .orElseThrow(() -> new NotFoundException("Perfil não encontrado"));
     }
 }
