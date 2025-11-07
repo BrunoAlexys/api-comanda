@@ -3,11 +3,13 @@ package br.com.apicomanda.config;
 import br.com.apicomanda.exception.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
@@ -64,6 +66,23 @@ public class RestExceptionHandler {
                 .status(UNAUTHORIZED.value())
                 .title(UNAUTHORIZED.name())
                 .details(exception.getMessage())
+                .developerMessage(exception.getClass().getName())
+                .build();
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(BAD_REQUEST)
+    public ExceptionDetails handlerMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
+        log.warn("MethodArgumentNotValidException: Validation failed.");
+        String detalhes = exception.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+
+        return ExceptionDetails.builder()
+                .timestamp(LocalDateTime.now())
+                .status(BAD_REQUEST.value())
+                .title(BAD_REQUEST.name())
+                .details(detalhes)
                 .developerMessage(exception.getClass().getName())
                 .build();
     }
