@@ -151,4 +151,35 @@ class UserServiceImplTest {
 
         verify(userRepository, times(1)).findById(id);
     }
+
+    @Test
+    @DisplayName("Deve retornar a entidade User quando buscar por e-mail existente")
+    void shouldReturnUserEntityWhenEmailExists() {
+        var email = "entity@gmail.com";
+        var expectedUser = User.builder().id(1L).email(email).name("Entity User").build();
+
+        when(userRepository.findByEmailIgnoreCase(email)).thenReturn(expectedUser);
+
+        User actualUser = userService.getUserByEmail(email);
+
+        assertNotNull(actualUser);
+        assertEquals(expectedUser, actualUser);
+        assertEquals(expectedUser.getEmail(), actualUser.getEmail());
+
+        verify(userRepository, times(1)).findByEmailIgnoreCase(email);
+    }
+
+    @Test
+    @DisplayName("Deve retornar null quando buscar entidade User por e-mail inexistente")
+    void shouldReturnNullWhenGettingUserEntityByNonExistentEmail() {
+        var email = "notfound@gmail.com";
+
+        when(userRepository.findByEmailIgnoreCase(email)).thenReturn(null);
+
+        User actualUser = userService.getUserByEmail(email);
+
+        assertNull(actualUser);
+
+        verify(userRepository, times(1)).findByEmailIgnoreCase(email);
+    }
 }

@@ -7,6 +7,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -37,6 +38,9 @@ public class User {
     @JoinTable(name = "user_profile", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "profile_id", referencedColumnName = "id"))
     private List<Profile> profiles;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Fee> fees = new ArrayList<>();
 
     public static User toEntity(CreateUserRequest userDTO, String encryptedPassword,Profile profile) {
         return User.builder()
