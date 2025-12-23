@@ -2,13 +2,14 @@ package br.com.apicomanda.helpers;
 
 public class ApplicationConstants {
     // Versão e Segurança
-    public static final String VERSION = "/v1";
+    public static final String
+            VERSION = "/v1";
     public static final String $ROLE_ADMIN = "ROLE_ADMIN";
     public static final String $ROLE_USER = "ROLE_USER";
     public static final String $ISSUER = "COMANDA_ONLINE";
 
     // Expressões Regulares
-    public static final String REGEX_PASSWORD = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#])[A-Za-z\\d@$!%*?&#]{8,}$";
+    public static final String REGEX_PASSWORD = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#.])([A-Za-z\\d@$!%*?&#.]{8,})$";
     public static final String REGEX_TELEPHONE = "^\\d{10,11}$";
 
     // Mensagens de Validação
