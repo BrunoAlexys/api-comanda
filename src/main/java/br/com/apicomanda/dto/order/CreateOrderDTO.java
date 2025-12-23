@@ -6,6 +6,7 @@ public record CreateOrderDTO(
         Integer tableNumber,
         List<OrderItemDTO> items,
         List<Long> appliedFeeIds,
-        String additionalComment
+        String additionalComment,
+        String userId
 ) {
 }
