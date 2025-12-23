@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers(VERSION + "/api/orders/kitchen/**").permitAll()
                         .requestMatchers(VERSION + "/api/orders/kitchen/statistics/average-time/**").permitAll()
+                        .requestMatchers(VERSION + "/api/profiles/**").permitAll()
 
                         // 4. Todo o resto requer token
                         .anyRequest().authenticated())
