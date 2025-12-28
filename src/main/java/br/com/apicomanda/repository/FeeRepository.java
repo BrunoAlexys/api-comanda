@@ -10,5 +10,5 @@ import java.util.List;
 
 @Repository
 public interface FeeRepository extends JpaRepository<Fee,Long> {
-    List<Fee> findByUserId(Long userId);
+    List<Fee> findByAdminId(Long adminId);
 }

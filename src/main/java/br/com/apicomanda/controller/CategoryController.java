@@ -21,7 +21,7 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @PostMapping
-    @PreAuthorize(ApplicationConstants.IS_ADMIN_OR_USER)
+    @PreAuthorize(ApplicationConstants.IS_ADMIN)
     public ResponseEntity<Category> createCategory(@Valid @RequestBody CategoryRequestDTO requestDTO) {
         var category = this.categoryService.createCategory(requestDTO);
         return ResponseEntity.ok(category);

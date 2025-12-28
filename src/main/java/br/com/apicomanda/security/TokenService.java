@@ -1,12 +1,13 @@
 package br.com.apicomanda.security;
 
+import br.com.apicomanda.domain.Admin;
 import br.com.apicomanda.domain.RefreshToken;
-import br.com.apicomanda.domain.User;
 import br.com.apicomanda.exception.NotFoundException;
 import br.com.apicomanda.exception.TokenRefreshException;
 import br.com.apicomanda.helpers.ApplicationConstants;
+import br.com.apicomanda.repository.EmployeeRepository;
 import br.com.apicomanda.repository.RefreshTokenRepository;
-import br.com.apicomanda.service.UserService;
+import br.com.apicomanda.repository.AdminRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -32,7 +33,8 @@ public class TokenService {
     @Value("${api.security.token.secret}")
     private String secret;
     private SecretKey secretKey;
-    private final UserService userService;
+    private final AdminRepository adminRepository;
+    private final EmployeeRepository employeeRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Value("${api.security.token.refresh-expiration-ms}")
@@ -75,19 +77,29 @@ public class TokenService {
     }
 
     public RefreshToken createRefreshToken(String userEmail) {
-        User user = this.userService.getUserByEmail(userEmail);
+        Admin admin = this.adminRepository.findByEmail(userEmail);
 
-        if (user == null) {
-            throw new NotFoundException("User not found");
+        if (admin != null) {
+            RefreshToken refreshToken = RefreshToken.builder()
+                    .admin(admin)
+                    .employee(null)
+                    .expirationDate(Instant.now().plusMillis(refreshExpirationMs))
+                    .token(UUID.randomUUID().toString())
+                    .build();
+            return refreshTokenRepository.save(refreshToken);
         }
 
-        RefreshToken refreshToken = RefreshToken.builder()
-                .user(user)
-                .expirationDate(Instant.now().plusMillis(refreshExpirationMs))
-                .token(UUID.randomUUID().toString())
-                .build();
-
-        return refreshTokenRepository.save(refreshToken);
+        var employee = this.employeeRepository.findByEmailIgnoreCase(userEmail);
+        if (employee != null) {
+            RefreshToken refreshToken = RefreshToken.builder()
+                    .employee(employee)
+                    .admin(null)
+                    .expirationDate(Instant.now().plusMillis(refreshExpirationMs))
+                    .token(UUID.randomUUID().toString())
+                    .build();
+            return refreshTokenRepository.save(refreshToken);
+        }
+        throw new NotFoundException("Usuário não encontrado com o email: " + userEmail);
     }
 
     public Optional<RefreshToken> findByToken(String token) {

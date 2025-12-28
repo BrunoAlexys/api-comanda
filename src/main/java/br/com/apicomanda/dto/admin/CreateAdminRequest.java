@@ -1,4 +1,4 @@
-package br.com.apicomanda.dto.user;
+package br.com.apicomanda.dto.admin;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Pattern;
 
 import static br.com.apicomanda.helpers.ApplicationConstants.*;
 
-public record CreateUserRequest(
+public record CreateAdminRequest(
         @NotBlank(message = MSG_NAME_REQUIRED)
         String name,
         @NotBlank(message = MSG_EMAIL_REQUIRED)

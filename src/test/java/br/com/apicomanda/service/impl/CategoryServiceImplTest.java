@@ -31,7 +31,7 @@ class CategoryServiceImplTest {
     @Test
     @DisplayName("Deve criar uma Categoria com sucesso")
     void shouldCreateCategorySuccessfully() {
-        var requestDTO = new CategoryRequestDTO("Bebidas");
+        var requestDTO = new CategoryRequestDTO("Bebidas", 1L);
         var expectedCategory = Category.builder()
                 .id(1L)
                 .name("Bebidas")
