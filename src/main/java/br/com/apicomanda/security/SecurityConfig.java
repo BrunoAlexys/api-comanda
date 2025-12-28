@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -25,6 +26,7 @@ import static br.com.apicomanda.helpers.ApplicationConstants.VERSION;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final SecurityFilter securityFilter;
@@ -46,7 +48,7 @@ public class SecurityConfig {
 
                         // 3. Outras rotas públicas (Login, Cadastro, WebSocket, Cozinha)
                         .requestMatchers(HttpMethod.POST, VERSION + "/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, VERSION + "/api/users").permitAll()
+                        .requestMatchers(HttpMethod.POST, VERSION + "/api/admins").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers(VERSION + "/api/orders/kitchen/**").permitAll()
                         .requestMatchers(VERSION + "/api/orders/kitchen/statistics/average-time/**").permitAll()

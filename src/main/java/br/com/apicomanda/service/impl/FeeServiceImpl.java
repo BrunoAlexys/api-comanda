@@ -6,7 +6,7 @@ import br.com.apicomanda.dto.fee.FeeResponseDTO;
 import br.com.apicomanda.exception.FeeNotFoundException;
 import br.com.apicomanda.repository.FeeRepository;
 import br.com.apicomanda.service.FeeService;
-import br.com.apicomanda.service.UserService;
+import br.com.apicomanda.service.AdminService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,23 +19,23 @@ import java.util.Optional;
 public class FeeServiceImpl implements FeeService {
 
     private final FeeRepository feeRepository;
-    private final UserService userService;
+    private final AdminService adminService;
 
     @Override
     @Transactional
     public void createFee(CreateFeeDTO requestDto) {
-        var user = this.userService.getUserById(requestDto.userId());
+        var user = this.adminService.getAdminById(requestDto.userId());
         var fee = Fee.builder()
                 .name(requestDto.name())
                 .percentage(requestDto.percentage())
-                .user(user)
+                .admin(user)
                 .build();
         this.feeRepository.save(fee);
     }
 
     @Override
     public List<FeeResponseDTO> findAllById(Long id) {
-        List<Fee> fees = feeRepository.findByUserId(id);
+        List<Fee> fees = feeRepository.findByAdminId(id);
 
         return fees.stream()
                 .map(fee -> new FeeResponseDTO(
@@ -50,6 +50,6 @@ public class FeeServiceImpl implements FeeService {
     public FeeResponseDTO findById(Long id) {
         Optional<Fee> fee = feeRepository.findById(id);
         return fee.map(value -> new FeeResponseDTO(value.getId(), value.getName(), value.getPercentage()))
-                .orElseThrow(() -> new FeeNotFoundException("Fee não encontrada!"));
+                .orElseThrow(() -> new FeeNotFoundException("Taxa não encontrada!"));
     }
 }

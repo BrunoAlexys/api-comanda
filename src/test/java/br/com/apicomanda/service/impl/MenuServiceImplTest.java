@@ -1,14 +1,13 @@
 package br.com.apicomanda.service.impl;
 
-import br.com.apicomanda.domain.Category;
+import br.com.apicomanda.domain.Admin;
 import br.com.apicomanda.domain.Menu;
-import br.com.apicomanda.domain.User;
 import br.com.apicomanda.dto.category.CategoryResponseDTO;
 import br.com.apicomanda.dto.menu.CreateMenuRequestDTO;
 import br.com.apicomanda.dto.menu.MenuResponseDTO;
 import br.com.apicomanda.repository.MenuRepository;
 import br.com.apicomanda.service.CategoryService;
-import br.com.apicomanda.service.UserService;
+import br.com.apicomanda.service.AdminService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +29,7 @@ class MenuServiceImplTest {
     private MenuRepository menuRepository;
 
     @Mock
-    private UserService userService;
+    private AdminService adminService;
 
     @Mock
     private CategoryService categoryService;
@@ -45,17 +44,17 @@ class MenuServiceImplTest {
         Long categoryId = 2L;
         var requestDTO = new CreateMenuRequestDTO("Hamburguer", "Delicioso", BigDecimal.valueOf(25.0), userId, categoryId);
 
-        var user = new User();
+        var user = new Admin();
         user.setId(userId);
 
         var categoryDto = new CategoryResponseDTO(categoryId, "Lanches");
 
-        when(userService.getUserById(userId)).thenReturn(user);
+        when(adminService.getAdminById(userId)).thenReturn(user);
         when(categoryService.getCategory(categoryId)).thenReturn(categoryDto);
 
         menuService.createMenu(requestDTO);
 
-        verify(userService, times(1)).getUserById(userId);
+        verify(adminService, times(1)).getAdminById(userId);
         verify(categoryService, times(1)).getCategory(categoryId);
         verify(menuRepository, times(1)).save(any(Menu.class));
     }
@@ -74,7 +73,7 @@ class MenuServiceImplTest {
 
         when(menuRepository.findMenuByUserIdAndCategoryId(userId, categoryId)).thenReturn(menuList);
 
-        List<MenuResponseDTO> response = menuService.findAllMenuUserByIdAndCategory(userId, categoryId);
+        List<MenuResponseDTO> response = menuService.findAllMenuAdminByIdAndCategory(userId, categoryId);
 
         assertNotNull(response);
         assertEquals(2, response.size());
@@ -96,7 +95,7 @@ class MenuServiceImplTest {
 
         when(menuRepository.findCategoriesByUserId(userId)).thenReturn(categories);
 
-        List<CategoryResponseDTO> response = menuService.getMenuCategoriesByUserID(userId);
+        List<CategoryResponseDTO> response = menuService.getMenuCategoriesByAdminID(userId);
 
         assertNotNull(response);
         assertEquals(2, response.size());

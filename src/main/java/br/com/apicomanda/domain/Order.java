@@ -57,7 +57,12 @@ public class Order {
     private LocalDateTime finishedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "admin_id", nullable = false)
     @ToString.Exclude
-    private User user;
+    private Admin admin;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id", nullable = true)
+    @ToString.Exclude
+    private Employee employee;
 }

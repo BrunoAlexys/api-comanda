@@ -1,12 +1,12 @@
 package br.com.apicomanda.service.impl;
 
 import br.com.apicomanda.domain.Fee;
-import br.com.apicomanda.domain.User;
+import br.com.apicomanda.domain.Admin;
 import br.com.apicomanda.dto.fee.CreateFeeDTO;
 import br.com.apicomanda.dto.fee.FeeResponseDTO;
 import br.com.apicomanda.exception.FeeNotFoundException;
 import br.com.apicomanda.repository.FeeRepository;
-import br.com.apicomanda.service.UserService;
+import br.com.apicomanda.service.AdminService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +29,7 @@ class FeeServiceImplTest {
     private FeeRepository feeRepository;
 
     @Mock
-    private UserService userService;
+    private AdminService adminService;
 
     @InjectMocks
     private FeeServiceImpl feeService;
@@ -39,14 +39,14 @@ class FeeServiceImplTest {
     void shouldCreateFeeSuccessfully() {
         Long userId = 1L;
         var requestDTO = new CreateFeeDTO("Taxa de Serviço", BigDecimal.valueOf(10.0), userId);
-        var user = new User();
+        var user = new Admin();
         user.setId(userId);
 
-        when(userService.getUserById(userId)).thenReturn(user);
+        when(adminService.getAdminById(userId)).thenReturn(user);
 
         feeService.createFee(requestDTO);
 
-        verify(userService, times(1)).getUserById(userId);
+        verify(adminService, times(1)).getAdminById(userId);
         verify(feeRepository, times(1)).save(any(Fee.class));
     }
 
@@ -58,7 +58,7 @@ class FeeServiceImplTest {
         var fee2 = Fee.builder().id(20L).name("Taxa 2").percentage(BigDecimal.valueOf(10)).build();
         var fees = List.of(fee1, fee2);
 
-        when(feeRepository.findByUserId(userId)).thenReturn(fees);
+        when(feeRepository.findByAdminId(userId)).thenReturn(fees);
 
         List<FeeResponseDTO> responseList = feeService.findAllById(userId);
 
@@ -67,7 +67,7 @@ class FeeServiceImplTest {
         assertEquals(fee1.getName(), responseList.get(0).name());
         assertEquals(fee2.getName(), responseList.get(1).name());
 
-        verify(feeRepository, times(1)).findByUserId(userId);
+        verify(feeRepository, times(1)).findByAdminId(userId);
     }
 
     @Test

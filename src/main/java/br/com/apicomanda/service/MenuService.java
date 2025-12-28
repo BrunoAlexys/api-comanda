@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface MenuService {
     void createMenu(CreateMenuRequestDTO requestDTO);
-    List<MenuResponseDTO> findAllMenuUserByIdAndCategory(Long userId, Long categoryId);
-    List<CategoryResponseDTO> getMenuCategoriesByUserID(Long userId);
+    List<MenuResponseDTO> findAllMenuAdminByIdAndCategory(Long userId, Long categoryId);
+    List<CategoryResponseDTO> getMenuCategoriesByAdminID(Long userId);
 }

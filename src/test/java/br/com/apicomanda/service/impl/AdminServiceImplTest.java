@@ -1,12 +1,12 @@
 package br.com.apicomanda.service.impl;
 
+import br.com.apicomanda.domain.Admin;
 import br.com.apicomanda.domain.Profile;
-import br.com.apicomanda.domain.User;
-import br.com.apicomanda.dto.user.CreateUserRequest;
-import br.com.apicomanda.dto.user.UserResponseDTO;
+import br.com.apicomanda.dto.admin.CreateAdminRequest;
+import br.com.apicomanda.dto.admin.AdminResponseDTO;
 import br.com.apicomanda.exception.NotFoundException;
 import br.com.apicomanda.exception.ObjectAlreadyRegisteredException;
-import br.com.apicomanda.repository.UserRepository;
+import br.com.apicomanda.repository.AdminRepository;
 import br.com.apicomanda.service.ProfileService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,10 +25,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class UserServiceImplTest {
+class AdminServiceImplTest {
 
     @Mock
-    private UserRepository userRepository;
+    private AdminRepository adminRepository;
 
     @Mock
     private ProfileService profileService;
@@ -37,37 +37,37 @@ class UserServiceImplTest {
     private PasswordEncoder passwordEncoder;
 
     @InjectMocks
-    private UserServiceImpl userService;
+    private AdminServiceImpl userService;
 
     @Captor
-    private ArgumentCaptor<User> userArgumentCaptor;
+    private ArgumentCaptor<Admin> userArgumentCaptor;
 
     @Test
     @DisplayName("Deve salvar um usuário com sucesso quando o e-mail não existe")
     void shouldSaveUserSuccessfully() {
         var idProfile = 1L;
-        var request = new CreateUserRequest("Jhon", "jhon@gmail.com", "88999999999", "Teste@123", idProfile);
+        var request = new CreateAdminRequest("Jhon", "jhon@gmail.com", "88999999999", "Teste@123", idProfile);
         var profile = new Profile(idProfile, "ROLE_USER");
         var encryptedPassword = "encrypted_password";
 
-        when(userRepository.existsByEmailIgnoreCase(request.email())).thenReturn(false);
+        when(adminRepository.existsByEmailIgnoreCase(request.email())).thenReturn(false);
         when(passwordEncoder.encode(request.password())).thenReturn(encryptedPassword);
         when(profileService.findProfile(request.idProfile())).thenReturn(profile);
 
         userService.saveUser(request);
 
-        verify(userRepository, times(1)).save(userArgumentCaptor.capture());
+        verify(adminRepository, times(1)).save(userArgumentCaptor.capture());
 
-        User savedUser = userArgumentCaptor.getValue();
+        Admin savedAdmin = userArgumentCaptor.getValue();
 
-        assertEquals(request.name(), savedUser.getName());
-        assertEquals(request.email(), savedUser.getEmail());
-        assertEquals(encryptedPassword, savedUser.getPassword());
-        assertNotNull(savedUser.getProfiles());
-        assertEquals(1, savedUser.getProfiles().size());
-        assertEquals(profile, savedUser.getProfiles().get(0));
+        assertEquals(request.name(), savedAdmin.getName());
+        assertEquals(request.email(), savedAdmin.getEmail());
+        assertEquals(encryptedPassword, savedAdmin.getPassword());
+        assertNotNull(savedAdmin.getProfiles());
+        assertEquals(1, savedAdmin.getProfiles().size());
+        assertEquals(profile, savedAdmin.getProfiles().get(0));
 
-        verify(userRepository, times(1)).existsByEmailIgnoreCase(request.email());
+        verify(adminRepository, times(1)).existsByEmailIgnoreCase(request.email());
         verify(passwordEncoder, times(1)).encode(request.password());
         verify(profileService, times(1)).findProfile(request.idProfile());
     }
@@ -76,9 +76,9 @@ class UserServiceImplTest {
     @DisplayName("Deve lançar exceção ao tentar salvar um usuário com e-mail que já existe")
     void shouldThrowExceptionWhenEmailAlreadyExists() {
         var idProfile = 1L;
-        var request = new CreateUserRequest("Jhon", "jhon@gmail.com", "88999999999", "Teste@123", idProfile);
+        var request = new CreateAdminRequest("Jhon", "jhon@gmail.com", "88999999999", "Teste@123", idProfile);
 
-        when(userRepository.existsByEmailIgnoreCase(request.email())).thenReturn(true);
+        when(adminRepository.existsByEmailIgnoreCase(request.email())).thenReturn(true);
 
         var exception = assertThrows(ObjectAlreadyRegisteredException.class, () -> {
             userService.saveUser(request);
@@ -88,24 +88,24 @@ class UserServiceImplTest {
 
         verify(passwordEncoder, never()).encode(anyString());
         verify(profileService, never()).findProfile(anyLong());
-        verify(userRepository, never()).save(any(User.class));
+        verify(adminRepository, never()).save(any(Admin.class));
     }
 
     @Test
     @DisplayName("Deve encontrar um usuário por e-mail e retornar um DTO")
     void shouldFindByEmailAndReturnDTO() {
         var email = "jhon@gmail.com";
-        var user = User.builder().email(email).name("Jhon").profiles(List.of()).build();
+        var user = Admin.builder().email(email).name("Jhon").profiles(List.of()).build();
 
-        when(userRepository.findByEmailIgnoreCase(email)).thenReturn(user);
+        when(adminRepository.findByEmailIgnoreCase(email)).thenReturn(user);
 
-        UserResponseDTO result = userService.findByEmail(email);
+        AdminResponseDTO result = userService.findByEmail(email);
 
         assertNotNull(result);
         assertEquals(user.getName(), result.name());
         assertEquals(user.getEmail(), result.email());
 
-        verify(userRepository, times(1)).findByEmailIgnoreCase(email);
+        verify(adminRepository, times(1)).findByEmailIgnoreCase(email);
     }
 
     @Test
@@ -113,29 +113,29 @@ class UserServiceImplTest {
     void shouldThrowExceptionWhenFindingByNonExistentEmail() {
         var email = "nonexistent@gmail.com";
 
-        when(userRepository.findByEmailIgnoreCase(email)).thenReturn(null);
+        when(adminRepository.findByEmailIgnoreCase(email)).thenReturn(null);
 
         assertThrows(NotFoundException.class, () -> {
             userService.findByEmail(email);
         });
 
-        verify(userRepository, times(1)).findByEmailIgnoreCase(email);
+        verify(adminRepository, times(1)).findByEmailIgnoreCase(email);
     }
 
     @Test
     @DisplayName("Deve encontrar um usuário por ID com sucesso")
     void shouldFindUserByIdSuccessfully() {
         var id = 1L;
-        var user = User.builder().id(id).email("test@test.com").build();
+        var user = Admin.builder().id(id).email("test@test.com").build();
 
-        when(userRepository.findById(id)).thenReturn(Optional.of(user));
+        when(adminRepository.findById(id)).thenReturn(Optional.of(user));
 
-        User result = userService.getUserById(id);
+        Admin result = userService.getAdminById(id);
 
         assertNotNull(result);
         assertEquals(id, result.getId());
 
-        verify(userRepository, times(1)).findById(id);
+        verify(adminRepository, times(1)).findById(id);
     }
 
     @Test
@@ -143,30 +143,30 @@ class UserServiceImplTest {
     void shouldThrowNotFoundExceptionForNonExistentUserId() {
         var id = 99L;
 
-        when(userRepository.findById(id)).thenReturn(Optional.empty());
+        when(adminRepository.findById(id)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> {
-            userService.getUserById(id);
+            userService.getAdminById(id);
         });
 
-        verify(userRepository, times(1)).findById(id);
+        verify(adminRepository, times(1)).findById(id);
     }
 
     @Test
     @DisplayName("Deve retornar a entidade User quando buscar por e-mail existente")
     void shouldReturnUserEntityWhenEmailExists() {
         var email = "entity@gmail.com";
-        var expectedUser = User.builder().id(1L).email(email).name("Entity User").build();
+        var expectedUser = Admin.builder().id(1L).email(email).name("Entity User").build();
 
-        when(userRepository.findByEmailIgnoreCase(email)).thenReturn(expectedUser);
+        when(adminRepository.findByEmailIgnoreCase(email)).thenReturn(expectedUser);
 
-        User actualUser = userService.getUserByEmail(email);
+        Admin actualAdmin = userService.getAdminByEmail(email);
 
-        assertNotNull(actualUser);
-        assertEquals(expectedUser, actualUser);
-        assertEquals(expectedUser.getEmail(), actualUser.getEmail());
+        assertNotNull(actualAdmin);
+        assertEquals(expectedUser, actualAdmin);
+        assertEquals(expectedUser.getEmail(), actualAdmin.getEmail());
 
-        verify(userRepository, times(1)).findByEmailIgnoreCase(email);
+        verify(adminRepository, times(1)).findByEmailIgnoreCase(email);
     }
 
     @Test
@@ -174,12 +174,12 @@ class UserServiceImplTest {
     void shouldReturnNullWhenGettingUserEntityByNonExistentEmail() {
         var email = "notfound@gmail.com";
 
-        when(userRepository.findByEmailIgnoreCase(email)).thenReturn(null);
+        when(adminRepository.findByEmailIgnoreCase(email)).thenReturn(null);
 
-        User actualUser = userService.getUserByEmail(email);
+        Admin actualAdmin = userService.getAdminByEmail(email);
 
-        assertNull(actualUser);
+        assertNull(actualAdmin);
 
-        verify(userRepository, times(1)).findByEmailIgnoreCase(email);
+        verify(adminRepository, times(1)).findByEmailIgnoreCase(email);
     }
 }

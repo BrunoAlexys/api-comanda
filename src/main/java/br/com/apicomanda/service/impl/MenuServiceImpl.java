@@ -8,7 +8,7 @@ import br.com.apicomanda.dto.menu.MenuResponseDTO;
 import br.com.apicomanda.repository.MenuRepository;
 import br.com.apicomanda.service.CategoryService;
 import br.com.apicomanda.service.MenuService;
-import br.com.apicomanda.service.UserService;
+import br.com.apicomanda.service.AdminService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -23,17 +23,17 @@ import java.util.List;
 public class MenuServiceImpl implements MenuService {
 
     private final MenuRepository menuRepository;
-    private final UserService userService;
+    private final AdminService adminService;
     private final CategoryService categoryService;
 
     @Override
     @Transactional
     @Caching(evict = {
             @CacheEvict(value = "userMenu", allEntries = true),
-            @CacheEvict(value = "userCategory", key = "#result.id")
+            @CacheEvict(value = "userCategory", key = "#requestDTO.adminId()")
     })
     public void createMenu(CreateMenuRequestDTO requestDTO) {
-        var userResponse = this.userService.getUserById(requestDTO.userId());
+        var userResponse = this.adminService.getAdminById(requestDTO.adminId());
         var category = this.categoryService.getCategory(requestDTO.categoryId());
 
         var categoryEntity = Category.builder()
@@ -45,7 +45,7 @@ public class MenuServiceImpl implements MenuService {
                 .name(requestDTO.name())
                 .description(requestDTO.description())
                 .price(requestDTO.price())
-                .user(userResponse)
+                .admin(userResponse)
                 .category(categoryEntity)
                 .build();
 
@@ -54,13 +54,13 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Cacheable(value = "userMenu", key = "#a0 + '-' + #a1")
-    public List<MenuResponseDTO> findAllMenuUserByIdAndCategory(Long userId, Long categoryId) {
+    public List<MenuResponseDTO> findAllMenuAdminByIdAndCategory(Long userId, Long categoryId) {
         return this.menuRepository.findMenuByUserIdAndCategoryId(userId, categoryId);
     }
 
     @Override
     @Cacheable(value = "userCategory", key = "#a0")
-    public List<CategoryResponseDTO> getMenuCategoriesByUserID(Long userId) {
+    public List<CategoryResponseDTO> getMenuCategoriesByAdminID(Long userId) {
         return this.menuRepository.findCategoriesByUserId(userId);
     }
 }
