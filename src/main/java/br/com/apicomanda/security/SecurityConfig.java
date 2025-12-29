@@ -20,7 +20,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
-// Importação estática da sua constante
 import static br.com.apicomanda.helpers.ApplicationConstants.VERSION;
 
 @Configuration
@@ -34,27 +33,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                // Configuração do CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // 1. Libera OPTIONS globalmente (Necessário para CORS funcionar com Security)
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // 2. Libera o PATCH para atualização de status
-                        // O Spring concatena: "/v1" + "/api/orders/**" = "/v1/api/orders/**"
                         .requestMatchers(HttpMethod.PATCH, VERSION + "/api/orders/**").permitAll()
-
-                        // 3. Outras rotas públicas (Login, Cadastro, WebSocket, Cozinha)
                         .requestMatchers(HttpMethod.POST, VERSION + "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, VERSION + "/api/admins").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers(VERSION + "/api/orders/kitchen/**").permitAll()
                         .requestMatchers(VERSION + "/api/orders/kitchen/statistics/average-time/**").permitAll()
                         .requestMatchers(VERSION + "/api/profiles/**").permitAll()
-
-                        // 4. Todo o resto requer token
                         .anyRequest().authenticated())
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
@@ -64,16 +55,9 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Origem do Front
         configuration.setAllowedOrigins(List.of("http://localhost:5173"));
-
-        // Métodos (PATCH e OPTIONS são cruciais)
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-
-        // Headers
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
-
-        // Credenciais
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
