@@ -15,12 +15,12 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
     @Query("SELECT DISTINCT new br.com.apicomanda.dto.category.CategoryResponseDTO(c.id, c.name) " +
             "FROM Menu m " +
             "JOIN m.category c " +
-            "WHERE m.user.id = :userId")
+            "WHERE m.admin.id = :userId")
     List<CategoryResponseDTO> findCategoriesByUserId(@Param("userId") Long userId);
     @Query("SELECT new br.com.apicomanda.dto.menu.MenuResponseDTO(" +
             "m.id, m.name, m.description, m.price, " +
             "new br.com.apicomanda.dto.category.CategoryResponseDTO(c.id, c.name)) " +
             "FROM Menu m JOIN m.category c " +
-            "WHERE m.user.id = :userId AND c.id = :categoryId")
+            "WHERE m.admin.id = :userId AND c.id = :categoryId")
     List<MenuResponseDTO> findMenuByUserIdAndCategoryId(@Param("userId") Long userId, @Param("categoryId") Long categoryId);
 }

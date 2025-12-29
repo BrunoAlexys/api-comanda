@@ -13,13 +13,16 @@ public class UserSS implements UserDetails {
     private String password;
     private final Collection<? extends GrantedAuthority> authorities;
     private final boolean enabled;
+    @Getter
+    private final boolean isEmployee;
 
-    public UserSS(Long id, String email, String password, Collection<? extends GrantedAuthority> authorities, boolean enabled) {
+    public UserSS(Long id, String email, String password, Collection<? extends GrantedAuthority> authorities, boolean enabled, boolean isEmployee) {
         this.id = id;
         this.email = email;
         this.password = password;
         this.authorities = authorities;
         this.enabled = enabled;
+        this.isEmployee = isEmployee;
     }
 
     @Override

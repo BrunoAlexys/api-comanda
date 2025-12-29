@@ -1,11 +1,11 @@
 package br.com.apicomanda.security;
 
+import br.com.apicomanda.domain.Admin;
 import br.com.apicomanda.domain.RefreshToken;
-import br.com.apicomanda.domain.User;
 import br.com.apicomanda.exception.NotFoundException;
 import br.com.apicomanda.exception.TokenRefreshException;
 import br.com.apicomanda.repository.RefreshTokenRepository;
-import br.com.apicomanda.service.UserService;
+import br.com.apicomanda.service.AdminService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.*;
 class TokenServiceTest {
 
     @Mock
-    private UserService userService;
+    private AdminService adminService;
 
     @Mock
     private RefreshTokenRepository refreshTokenRepository;
@@ -40,7 +40,7 @@ class TokenServiceTest {
     @InjectMocks
     private TokenService tokenService;
 
-    private User user;
+    private Admin admin;
     private UserSS userSS;
     private final String testSecret = "my-test-secret-key-that-is-long-enough-for-hs256";
 
@@ -53,9 +53,9 @@ class TokenServiceTest {
 
         ReflectionTestUtils.setField(tokenService, "refreshExpirationMs", 86400000L);
 
-        this.userSS = new UserSS(1L, "test@example.com", "password", Collections.emptyList(), true);
+        this.userSS = new UserSS(1L, "test@example.com", "password", Collections.emptyList(), true, false);
 
-        this.user = User.builder()
+        this.admin = Admin.builder()
                 .id(1L)
                 .email("test@example.com")
                 .password("password")
@@ -79,7 +79,7 @@ class TokenServiceTest {
                 .getPayload()
                 .getSubject();
 
-        assertThat(subject).isEqualTo(user.getEmail());
+        assertThat(subject).isEqualTo(admin.getEmail());
     }
 
     @Test
@@ -89,7 +89,7 @@ class TokenServiceTest {
 
         String subject = tokenService.validatorToken(token);
 
-        assertThat(subject).isEqualTo(user.getEmail());
+        assertThat(subject).isEqualTo(admin.getEmail());
     }
 
     @Test
@@ -122,24 +122,24 @@ class TokenServiceTest {
     @Test
     @DisplayName("Deve criar e salvar um RefreshToken quando o usuário existir")
     void createRefreshToken_shouldCreateAndSaveTokenWhenUserExists() {
-        when(userService.getUserByEmail(user.getEmail())).thenReturn(user);
+        when(adminService.getAdminByEmail(admin.getEmail())).thenReturn(admin);
         when(refreshTokenRepository.save(any(RefreshToken.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        RefreshToken refreshToken = tokenService.createRefreshToken(user.getEmail());
+        RefreshToken refreshToken = tokenService.createRefreshToken(admin.getEmail());
 
         assertThat(refreshToken).isNotNull();
-        assertThat(refreshToken.getUser()).isEqualTo(user);
+        assertThat(refreshToken.getAdmin()).isEqualTo(admin);
         assertThat(refreshToken.getToken()).isNotNull();
         assertThat(refreshToken.getExpirationDate()).isAfter(Instant.now());
 
-        verify(userService, times(1)).getUserByEmail(user.getEmail());
+        verify(adminService, times(1)).getAdminByEmail(admin.getEmail());
         verify(refreshTokenRepository, times(1)).save(any(RefreshToken.class));
     }
 
     @Test
     @DisplayName("Deve lançar NotFounException ao tentar criar RefreshToken para usuário inexistente")
     void createRefreshToken_shouldThrowNotFoundExceptionWhenUserDoesNotExist() {
-        when(userService.getUserByEmail(anyString())).thenReturn(null);
+        when(adminService.getAdminByEmail(anyString())).thenReturn(null);
 
         assertThrows(NotFoundException.class, () -> {
             tokenService.createRefreshToken("nonexistent@user.com");

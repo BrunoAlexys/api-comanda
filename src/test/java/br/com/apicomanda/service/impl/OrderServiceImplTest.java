@@ -1,15 +1,15 @@
 package br.com.apicomanda.service.impl;
 
+import br.com.apicomanda.domain.Admin;
 import br.com.apicomanda.domain.Fee;
 import br.com.apicomanda.domain.Menu;
 import br.com.apicomanda.domain.Order;
-import br.com.apicomanda.domain.User;
 import br.com.apicomanda.dto.order.CreateOrderDTO;
 import br.com.apicomanda.dto.order.OrderItemDTO;
 import br.com.apicomanda.repository.FeeRepository;
 import br.com.apicomanda.repository.MenuRepository;
 import br.com.apicomanda.repository.OrderRepository;
-import br.com.apicomanda.service.UserService;
+import br.com.apicomanda.service.AdminService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,7 +42,7 @@ class OrderServiceImplTest {
     private FeeRepository feeRepository;
 
     @Mock
-    private UserService userService;
+    private AdminService adminService;
 
     @Mock
     private SimpMessagingTemplate simpMessagingTemplate;
@@ -63,17 +63,17 @@ class OrderServiceImplTest {
         List<OrderItemDTO> items = List.of(itemDto);
         List<Long> feesIds = List.of(feeId);
 
-        var requestDTO = new CreateOrderDTO(1, items, feesIds, "Sem cebola", "1");
+        var requestDTO = new CreateOrderDTO(1, items, feesIds, "Sem cebola", 2L);
 
         var menu = Menu.builder().id(menuId).name("Pizza").price(menuPrice).build();
         var fee = Fee.builder().id(feeId).name("Serviço").percentage(feePercentage).build();
 
-        var user = new User();
+        var user = new Admin();
         user.setId(1L);
 
         when(menuRepository.findById(menuId)).thenReturn(Optional.of(menu));
         when(feeRepository.findAllById(feesIds)).thenReturn(List.of(fee));
-        when(userService.getUserById(anyLong())).thenReturn(user);
+        when(adminService.getAdminById(anyLong())).thenReturn(user);
 
         // CORREÇÃO: Simula o banco gerando ID e DATA
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
@@ -117,15 +117,15 @@ class OrderServiceImplTest {
         List<OrderItemDTO> items = List.of(itemDto);
         List<Long> feesIds = Collections.emptyList();
 
-        var requestDTO = new CreateOrderDTO(2, items, feesIds, null, "2");
+        var requestDTO = new CreateOrderDTO(2, items, feesIds, null, 2L);
 
         var menu = Menu.builder().id(menuId).name("Hamburguer").price(menuPrice).build();
 
-        var user = new User();
+        var user = new Admin();
         user.setId(2L);
 
         when(menuRepository.findById(menuId)).thenReturn(Optional.of(menu));
-        when(userService.getUserById(anyLong())).thenReturn(user);
+        when(adminService.getAdminById(anyLong())).thenReturn(user);
 
         // CORREÇÃO: Simula o banco gerando ID e DATA
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
@@ -157,7 +157,7 @@ class OrderServiceImplTest {
         List<OrderItemDTO> items = List.of(itemDto);
         List<Long> feesIds = Collections.emptyList();
 
-        var requestDTO = new CreateOrderDTO(1, items, feesIds, null, "1");
+        var requestDTO = new CreateOrderDTO(1, items, feesIds, null,  2L);
 
         when(menuRepository.findById(invalidMenuId)).thenReturn(Optional.empty());
 
@@ -175,12 +175,12 @@ class OrderServiceImplTest {
         List<OrderItemDTO> items = Collections.emptyList();
         List<Long> feesIds = Collections.emptyList();
 
-        var requestDTO = new CreateOrderDTO(1, items, feesIds, null, "1");
+        var requestDTO = new CreateOrderDTO(1, items, feesIds, null, 2L);
 
-        var user = new User();
+        var user = new Admin();
         user.setId(1L);
 
-        when(userService.getUserById(anyLong())).thenReturn(user);
+        when(adminService.getAdminById(anyLong())).thenReturn(user);
 
         // CORREÇÃO: Simula o banco gerando ID e DATA
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {

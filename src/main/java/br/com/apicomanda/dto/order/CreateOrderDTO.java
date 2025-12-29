@@ -7,6 +7,6 @@ public record CreateOrderDTO(
         List<OrderItemDTO> items,
         List<Long> appliedFeeIds,
         String additionalComment,
-        String userId
+        Long userId
 ) {
 }

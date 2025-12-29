@@ -26,6 +26,6 @@ public class ApplicationConstants {
     public static final String USER = "USER";
 
     // Constantes de Autorização
-    public static final String IS_ADMIN_OR_USER = "hasAnyRole('" + ADMIN + "', '" + USER + "')";
-    public static final String IS_ADMIN = "hasRole('" + ADMIN + "')";
+    public static final String IS_ADMIN_OR_USER = "hasAnyAuthority('" + $ROLE_ADMIN + "', '" + $ROLE_USER + "')";
+    public static final String IS_ADMIN = "hasAuthority('" + $ROLE_ADMIN + "')";
 }

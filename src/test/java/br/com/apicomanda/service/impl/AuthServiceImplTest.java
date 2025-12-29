@@ -2,7 +2,7 @@ package br.com.apicomanda.service.impl;
 
 import br.com.apicomanda.domain.Profile;
 import br.com.apicomanda.domain.RefreshToken;
-import br.com.apicomanda.domain.User;
+import br.com.apicomanda.domain.Admin;
 import br.com.apicomanda.dto.auth.CredentialRequestDTO;
 import br.com.apicomanda.dto.auth.RefreshTokenDTO;
 import br.com.apicomanda.dto.auth.TokenResponse;
@@ -11,10 +11,10 @@ import br.com.apicomanda.exception.TokenRefreshException;
 import br.com.apicomanda.exception.UserInactiveException;
 import br.com.apicomanda.exception.UserUnauthorizedExecption;
 import br.com.apicomanda.repository.RefreshTokenRepository;
-import br.com.apicomanda.repository.UserRepository;
+import br.com.apicomanda.repository.AdminRepository;
 import br.com.apicomanda.security.TokenService;
 import br.com.apicomanda.security.UserSS;
-import br.com.apicomanda.service.UserService;
+import br.com.apicomanda.service.AdminService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -44,7 +43,7 @@ import static org.mockito.Mockito.*;
 class AuthServiceImplTest {
 
     @Mock
-    private UserRepository userRepository;
+    private AdminRepository adminRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -59,13 +58,13 @@ class AuthServiceImplTest {
     private RefreshTokenRepository refreshTokenRepository;
 
     @Mock
-    private UserService userService;
+    private AdminService adminService;
 
     @InjectMocks
     private AuthServiceImpl authService;
 
     private CredentialRequestDTO credentials;
-    private User user;
+    private Admin admin;
     private UserSS userSS;
     private RefreshToken refreshToken;
     private final Long accessTokenExpirationMs = 3600000L;
@@ -74,7 +73,7 @@ class AuthServiceImplTest {
     void setUp() {
         credentials = new CredentialRequestDTO("user@email.com", "password123");
 
-        user = User.builder()
+        admin = Admin.builder()
                 .id(1L)
                 .email(credentials.email())
                 .password("encodedPassword")
@@ -82,15 +81,15 @@ class AuthServiceImplTest {
                 .profiles(List.of(new Profile(1L, "ROLE_USER")))
                 .build();
 
-        var authorities = user.getProfiles().stream()
+        var authorities = admin.getProfiles().stream()
                 .map(profile -> new SimpleGrantedAuthority(profile.getName()))
                 .collect(Collectors.toList());
 
-        userSS = new UserSS(user.getId(), user.getEmail(), user.getPassword(), authorities, user.isStatus());
+        userSS = new UserSS(admin.getId(), admin.getEmail(), admin.getPassword(), authorities, admin.isStatus(), false);
 
         refreshToken = RefreshToken.builder()
                 .id(100L)
-                .user(user)
+                .admin(admin)
                 .token(UUID.randomUUID().toString())
                 .expirationDate(Instant.now().plusMillis(86400000))
                 .build();
@@ -106,14 +105,14 @@ class AuthServiceImplTest {
         var expectedAccessToken = "jwt.access.token.string";
         var expectedRefreshTokenString = refreshToken.getToken();
 
-        when(userRepository.findByEmail(credentials.email())).thenReturn(user);
-        when(passwordEncoder.matches(credentials.password(), user.getPassword())).thenReturn(true);
+        when(adminRepository.findByEmail(credentials.email())).thenReturn(admin);
+        when(passwordEncoder.matches(credentials.password(), admin.getPassword())).thenReturn(true);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
 
-        when(userService.getUserById(user.getId())).thenReturn(user);
+        when(adminService.getAdminById(admin.getId())).thenReturn(admin);
         when(tokenService.generateToken(userSS)).thenReturn(expectedAccessToken);
-        when(tokenService.createRefreshToken(user.getEmail())).thenReturn(refreshToken);
-        doNothing().when(refreshTokenRepository).deleteByUser(user);
+        when(tokenService.createRefreshToken(admin.getEmail())).thenReturn(refreshToken);
+        doNothing().when(refreshTokenRepository).deleteByAdmin(admin);
 
         var tokenResponse = authService.login(credentials);
 
@@ -122,20 +121,20 @@ class AuthServiceImplTest {
         assertEquals(expectedRefreshTokenString, tokenResponse.refreshToken());
         assertEquals(accessTokenExpirationMs, tokenResponse.expiresIn());
 
-        verify(userRepository, times(1)).findByEmail(credentials.email());
-        verify(passwordEncoder, times(1)).matches(credentials.password(), user.getPassword());
+        verify(adminRepository, times(1)).findByEmail(credentials.email());
+        verify(passwordEncoder, times(1)).matches(credentials.password(), admin.getPassword());
         verify(authenticationManager, times(1)).authenticate(any());
-        verify(userService, times(1)).getUserById(user.getId());
+        verify(adminService, times(1)).getAdminById(admin.getId());
         verify(tokenService, times(1)).generateToken(userSS);
-        verify(refreshTokenRepository, times(1)).deleteByUser(user);
-        verify(tokenService, times(1)).createRefreshToken(user.getEmail());
+        verify(refreshTokenRepository, times(1)).deleteByAdmin(admin);
+        verify(tokenService, times(1)).createRefreshToken(admin.getEmail());
     }
 
     @Test
     @DisplayName("Deve lançar UserUnauthorizedExecption para senha incorreta")
     void shouldThrowUserUnauthorizedExceptionForIncorrectPassword() {
-        when(userRepository.findByEmail(credentials.email())).thenReturn(user);
-        when(passwordEncoder.matches(credentials.password(), user.getPassword())).thenReturn(false);
+        when(adminRepository.findByEmail(credentials.email())).thenReturn(admin);
+        when(passwordEncoder.matches(credentials.password(), admin.getPassword())).thenReturn(false);
 
         assertThrows(UserUnauthorizedExecption.class, () -> authService.login(credentials));
 
@@ -146,22 +145,22 @@ class AuthServiceImplTest {
     @Test
     @DisplayName("Deve lançar UserUnauthorizedExecption quando o usuário não existe")
     void shouldThrowUserUnauthorizedExceptionForNonExistentUser() {
-        when(userRepository.findByEmail(credentials.email())).thenReturn(null);
+        when(adminRepository.findByEmail(credentials.email())).thenReturn(null);
         when(authenticationManager.authenticate(any())).thenThrow(new UserUnauthorizedExecption("E-mail ou senha incorretos"));
 
         var exception = assertThrows(UserUnauthorizedExecption.class, () -> authService.login(credentials));
 
         assertEquals("E-mail ou senha incorretos", exception.getMessage());
 
-        verify(userRepository, times(1)).findByEmail(credentials.email());
+        verify(adminRepository, times(1)).findByEmail(credentials.email());
         verify(authenticationManager, times(1)).authenticate(any());
     }
 
     @Test
     @DisplayName("Deve lançar UserInactiveException para usuário desabilitado")
     void shouldThrowUserInactiveExceptionForDisabledUser() {
-        when(userRepository.findByEmail(credentials.email())).thenReturn(user);
-        when(passwordEncoder.matches(credentials.password(), user.getPassword())).thenReturn(true);
+        when(adminRepository.findByEmail(credentials.email())).thenReturn(admin);
+        when(passwordEncoder.matches(credentials.password(), admin.getPassword())).thenReturn(true);
 
         String disabledMessage = ErrorUserDisableMessages.USER_IS_DISABLED.getMessage();
         when(authenticationManager.authenticate(any())).thenThrow(new DisabledException(disabledMessage));
@@ -182,7 +181,7 @@ class AuthServiceImplTest {
         when(tokenService.findByToken(refreshTokenRequest.refreshToken())).thenReturn(Optional.of(refreshToken));
         when(tokenService.verifyExpiration(refreshToken)).thenReturn(refreshToken);
         when(tokenService.generateToken(any(UserSS.class))).thenReturn(newAccessToken);
-        when(tokenService.createRefreshToken(user.getEmail())).thenReturn(newRefreshToken);
+        when(tokenService.createRefreshToken(admin.getEmail())).thenReturn(newRefreshToken);
         doNothing().when(refreshTokenRepository).delete(refreshToken);
 
         TokenResponse tokenResponse = authService.refreshToken(refreshTokenRequest);
@@ -195,7 +194,7 @@ class AuthServiceImplTest {
         verify(tokenService, times(1)).verifyExpiration(refreshToken);
         verify(refreshTokenRepository, times(1)).delete(refreshToken);
         verify(tokenService, times(1)).generateToken(any(UserSS.class));
-        verify(tokenService, times(1)).createRefreshToken(user.getEmail());
+        verify(tokenService, times(1)).createRefreshToken(admin.getEmail());
     }
 
     @Test

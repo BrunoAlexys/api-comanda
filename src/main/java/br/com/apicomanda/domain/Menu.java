@@ -22,8 +22,8 @@ public class Menu {
     private String description;
     private BigDecimal price;
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "admin_id")
+    private Admin admin;
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
