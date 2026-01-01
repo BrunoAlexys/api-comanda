@@ -1,6 +1,5 @@
 package br.com.apicomanda.service.impl;
 
-import br.com.apicomanda.domain.Admin;
 import br.com.apicomanda.dto.auth.CredentialRequestDTO;
 import br.com.apicomanda.dto.auth.RefreshTokenDTO;
 import br.com.apicomanda.dto.auth.TokenResponse;
@@ -11,9 +10,9 @@ import br.com.apicomanda.enums.ErrorUserDisableMessages;
 import br.com.apicomanda.exception.TokenRefreshException;
 import br.com.apicomanda.exception.UserInactiveException;
 import br.com.apicomanda.exception.UserUnauthorizedExecption;
+import br.com.apicomanda.repository.AdminRepository;
 import br.com.apicomanda.repository.EmployeeRepository;
 import br.com.apicomanda.repository.RefreshTokenRepository;
-import br.com.apicomanda.repository.AdminRepository;
 import br.com.apicomanda.security.TokenService;
 import br.com.apicomanda.security.UserSS;
 import br.com.apicomanda.service.AuthService;
@@ -21,6 +20,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -30,8 +30,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-
-import org.springframework.http.*;
 
 import java.util.stream.Collectors;
 
