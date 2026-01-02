@@ -4,6 +4,8 @@ import br.com.apicomanda.domain.Admin;
 import br.com.apicomanda.domain.RefreshToken;
 import br.com.apicomanda.exception.NotFoundException;
 import br.com.apicomanda.exception.TokenRefreshException;
+import br.com.apicomanda.repository.AdminRepository;
+import br.com.apicomanda.repository.EmployeeRepository;
 import br.com.apicomanda.repository.RefreshTokenRepository;
 import br.com.apicomanda.service.AdminService;
 import io.jsonwebtoken.Jwts;
@@ -32,7 +34,10 @@ import static org.mockito.Mockito.*;
 class TokenServiceTest {
 
     @Mock
-    private AdminService adminService;
+    private AdminRepository adminRepository;
+
+    @Mock
+    private EmployeeRepository employeeRepository;
 
     @Mock
     private RefreshTokenRepository refreshTokenRepository;
@@ -122,7 +127,7 @@ class TokenServiceTest {
     @Test
     @DisplayName("Deve criar e salvar um RefreshToken quando o usuário existir")
     void createRefreshToken_shouldCreateAndSaveTokenWhenUserExists() {
-        when(adminService.getAdminByEmail(admin.getEmail())).thenReturn(admin);
+        when(adminRepository.findByEmail(admin.getEmail())).thenReturn(Optional.ofNullable(admin));
         when(refreshTokenRepository.save(any(RefreshToken.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         RefreshToken refreshToken = tokenService.createRefreshToken(admin.getEmail());
@@ -132,14 +137,16 @@ class TokenServiceTest {
         assertThat(refreshToken.getToken()).isNotNull();
         assertThat(refreshToken.getExpirationDate()).isAfter(Instant.now());
 
-        verify(adminService, times(1)).getAdminByEmail(admin.getEmail());
+        verify(adminRepository, times(1)).findByEmail(admin.getEmail());
         verify(refreshTokenRepository, times(1)).save(any(RefreshToken.class));
     }
 
     @Test
-    @DisplayName("Deve lançar NotFounException ao tentar criar RefreshToken para usuário inexistente")
+    @DisplayName("Deve lançar NotFoundException ao tentar criar RefreshToken para usuário inexistente")
     void createRefreshToken_shouldThrowNotFoundExceptionWhenUserDoesNotExist() {
-        when(adminService.getAdminByEmail(anyString())).thenReturn(null);
+        when(adminRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+        when(employeeRepository.findByEmailIgnoreCase(anyString())).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> {
             tokenService.createRefreshToken("nonexistent@user.com");

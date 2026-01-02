@@ -209,7 +209,7 @@ class AuthServiceImplTest {
                 eq(GoogleUserInfoDTO.class))
         ).thenReturn(new ResponseEntity<>(googleUserInfo, HttpStatus.OK));
 
-        when(adminRepository.findByEmail(googleUserInfo.email())).thenReturn(admin);
+        when(adminRepository.findByEmail(googleUserInfo.email())).thenReturn(Optional.of(admin));
         when(adminRepository.findById(admin.getId())).thenReturn(Optional.of(admin));
 
         String expectedToken = "jwt.google.access.token";
@@ -240,8 +240,8 @@ class AuthServiceImplTest {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(GoogleUserInfoDTO.class)))
                 .thenReturn(new ResponseEntity<>(googleUserInfo, HttpStatus.OK));
 
-        when(adminRepository.findByEmail(googleUserInfo.email())).thenReturn(null);
-        when(employeeRepository.findByEmailIgnoreCase(googleUserInfo.email())).thenReturn(employee);
+        when(adminRepository.findByEmail(googleUserInfo.email())).thenReturn(Optional.empty());
+        when(employeeRepository.findByEmailIgnoreCase(googleUserInfo.email())).thenReturn(Optional.of(employee));
         when(employeeRepository.findById(employee.getId())).thenReturn(Optional.of(employee));
 
         when(tokenService.generateToken(any(UserSS.class))).thenReturn("jwt.employee.token");
@@ -262,8 +262,8 @@ class AuthServiceImplTest {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(GoogleUserInfoDTO.class)))
                 .thenReturn(new ResponseEntity<>(googleUserInfo, HttpStatus.OK));
 
-        when(adminRepository.findByEmail(googleUserInfo.email())).thenReturn(null);
-        when(employeeRepository.findByEmailIgnoreCase(googleUserInfo.email())).thenReturn(null);
+        when(adminRepository.findByEmail(googleUserInfo.email())).thenReturn(Optional.empty());
+        when(employeeRepository.findByEmailIgnoreCase(googleUserInfo.email())).thenReturn(Optional.empty());
 
         UserUnauthorizedExecption exception = assertThrows(UserUnauthorizedExecption.class,
                 () -> authService.loginGoogle(googleCodeDTO));

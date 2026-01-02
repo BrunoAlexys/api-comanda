@@ -77,11 +77,11 @@ public class TokenService {
     }
 
     public RefreshToken createRefreshToken(String userEmail) {
-        Admin admin = this.adminRepository.findByEmail(userEmail);
+        var admin = this.adminRepository.findByEmail(userEmail);
 
-        if (admin != null) {
+        if (admin.isPresent()) {
             RefreshToken refreshToken = RefreshToken.builder()
-                    .admin(admin)
+                    .admin(admin.get())
                     .employee(null)
                     .expirationDate(Instant.now().plusMillis(refreshExpirationMs))
                     .token(UUID.randomUUID().toString())
@@ -90,9 +90,9 @@ public class TokenService {
         }
 
         var employee = this.employeeRepository.findByEmailIgnoreCase(userEmail);
-        if (employee != null) {
+        if (employee.isPresent()) {
             RefreshToken refreshToken = RefreshToken.builder()
-                    .employee(employee)
+                    .employee(employee.get())
                     .admin(null)
                     .expirationDate(Instant.now().plusMillis(refreshExpirationMs))
                     .token(UUID.randomUUID().toString())
