@@ -4,9 +4,11 @@ import br.com.apicomanda.domain.Admin;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface AdminRepository extends JpaRepository<Admin, Long> {
-    Admin findByEmail(String email);
+    Optional<Admin> findByEmail(String email);
     boolean existsByEmailIgnoreCase(String email);
-    Admin findByEmailIgnoreCase(String email);
+    Optional<Admin> findByEmailIgnoreCase(String email);
 }

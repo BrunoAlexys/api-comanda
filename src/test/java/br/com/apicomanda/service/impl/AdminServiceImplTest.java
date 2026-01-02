@@ -2,11 +2,13 @@ package br.com.apicomanda.service.impl;
 
 import br.com.apicomanda.domain.Admin;
 import br.com.apicomanda.domain.Profile;
-import br.com.apicomanda.dto.admin.CreateAdminRequest;
 import br.com.apicomanda.dto.admin.AdminResponseDTO;
+import br.com.apicomanda.dto.admin.CreateAdminRequest;
 import br.com.apicomanda.exception.NotFoundException;
 import br.com.apicomanda.exception.ObjectAlreadyRegisteredException;
+import br.com.apicomanda.exception.UserNotFoundException;
 import br.com.apicomanda.repository.AdminRepository;
+import br.com.apicomanda.repository.EmployeeRepository;
 import br.com.apicomanda.service.ProfileService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,6 +31,9 @@ class AdminServiceImplTest {
 
     @Mock
     private AdminRepository adminRepository;
+
+    @Mock
+    private EmployeeRepository employeeRepository;
 
     @Mock
     private ProfileService profileService;
@@ -97,7 +102,7 @@ class AdminServiceImplTest {
         var email = "jhon@gmail.com";
         var user = Admin.builder().email(email).name("Jhon").profiles(List.of()).build();
 
-        when(adminRepository.findByEmailIgnoreCase(email)).thenReturn(user);
+        when(adminRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.of(user));
 
         AdminResponseDTO result = userService.findByEmail(email);
 
@@ -113,13 +118,15 @@ class AdminServiceImplTest {
     void shouldThrowExceptionWhenFindingByNonExistentEmail() {
         var email = "nonexistent@gmail.com";
 
-        when(adminRepository.findByEmailIgnoreCase(email)).thenReturn(null);
+        when(adminRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.empty());
+        when(employeeRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> {
             userService.findByEmail(email);
         });
 
         verify(adminRepository, times(1)).findByEmailIgnoreCase(email);
+        verify(employeeRepository, times(1)).findByEmailIgnoreCase(email);
     }
 
     @Test
@@ -158,7 +165,7 @@ class AdminServiceImplTest {
         var email = "entity@gmail.com";
         var expectedUser = Admin.builder().id(1L).email(email).name("Entity User").build();
 
-        when(adminRepository.findByEmailIgnoreCase(email)).thenReturn(expectedUser);
+        when(adminRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.of(expectedUser));
 
         Admin actualAdmin = userService.getAdminByEmail(email);
 
@@ -170,15 +177,14 @@ class AdminServiceImplTest {
     }
 
     @Test
-    @DisplayName("Deve retornar null quando buscar entidade User por e-mail inexistente")
-    void shouldReturnNullWhenGettingUserEntityByNonExistentEmail() {
+    @DisplayName("Deve lançar exceção quando buscar entidade Admin por e-mail inexistente")
+    void shouldThrowExceptionWhenGettingAdminByNonExistentEmail() {
         var email = "notfound@gmail.com";
+        when(adminRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.empty());
 
-        when(adminRepository.findByEmailIgnoreCase(email)).thenReturn(null);
-
-        Admin actualAdmin = userService.getAdminByEmail(email);
-
-        assertNull(actualAdmin);
+        assertThrows(UserNotFoundException.class, () -> {
+            userService.getAdminByEmail(email);
+        });
 
         verify(adminRepository, times(1)).findByEmailIgnoreCase(email);
     }
