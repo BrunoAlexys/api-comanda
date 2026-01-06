@@ -14,7 +14,7 @@ import static br.com.apicomanda.helpers.ApplicationConstants.IS_ADMIN_OR_USER;
 import static br.com.apicomanda.helpers.ApplicationConstants.VERSION;
 
 @RestController
-@RequestMapping(VERSION + "/api/admins")
+@RequestMapping(VERSION + "/api/admin")
 @RequiredArgsConstructor
 public class AdminController {
 

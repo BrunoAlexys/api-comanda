@@ -5,6 +5,7 @@ import br.com.apicomanda.dto.admin.CreateAdminRequest;
 import br.com.apicomanda.dto.admin.AdminResponseDTO;
 import br.com.apicomanda.exception.NotFoundException;
 import br.com.apicomanda.exception.ObjectAlreadyRegisteredException;
+import br.com.apicomanda.exception.UserNotFoundException;
 import br.com.apicomanda.repository.EmployeeRepository;
 import br.com.apicomanda.repository.AdminRepository;
 import br.com.apicomanda.service.ProfileService;
@@ -40,14 +41,14 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Cacheable(value = "users", key = "#a0")
     public AdminResponseDTO findByEmail(String email) {
-        var user = this.adminRepository.findByEmailIgnoreCase(email);
-        if (user != null) {
-            return new AdminResponseDTO(user);
+        var adminOptional = this.adminRepository.findByEmailIgnoreCase(email);
+        if (adminOptional.isPresent()) {
+            return new AdminResponseDTO(adminOptional.get());
         }
 
-        var employee = this.employeeRepository.findByEmailIgnoreCase(email);
-        if (employee != null) {
-            return new AdminResponseDTO(employee);
+        var employeeOptional = this.employeeRepository.findByEmailIgnoreCase(email);
+        if (employeeOptional.isPresent()) {
+            return new AdminResponseDTO(employeeOptional.get());
         }
 
         throw new NotFoundException("Usuário não encontrado com o email: " + email);
@@ -55,7 +56,8 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public Admin getAdminByEmail(String email) {
-        return this.adminRepository.findByEmailIgnoreCase(email);
+        return this.adminRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado!"));
     }
 
     @Override

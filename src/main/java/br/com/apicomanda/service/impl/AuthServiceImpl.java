@@ -199,17 +199,17 @@ public class AuthServiceImpl implements AuthService {
         var admin = this.adminRepository.findByEmail(googleUser.email());
         UserSS userSS;
 
-        if (admin != null) {
-            var authorities = admin.getProfiles().stream()
+        if (admin.isPresent()) {
+            var authorities = admin.get().getProfiles().stream()
                     .map(p -> new SimpleGrantedAuthority(p.getName().toUpperCase())).toList();
-            userSS = new UserSS(admin.getId(), admin.getEmail(), "", authorities, admin.isStatus(), false);
+            userSS = new UserSS(admin.get().getId(), admin.get().getEmail(), "", authorities, admin.get().isStatus(), false);
         } else {
             var employee = this.employeeRepository.findByEmailIgnoreCase(googleUser.email());
 
-            if (employee != null) {
-                var authorities = employee.getProfiles().stream()
+            if (employee.isPresent()) {
+                var authorities = employee.get().getProfiles().stream()
                         .map(p -> new SimpleGrantedAuthority(p.getName().toUpperCase())).toList();
-                userSS = new UserSS(employee.getId(), employee.getEmail(), "", authorities, employee.getActive(), true);
+                userSS = new UserSS(employee.get().getId(), employee.get().getEmail(), "", authorities, employee.get().getActive(), true);
             } else {
                 throw new UserUnauthorizedExecption("Este e-mail Google não possui cadastro no sistema.");
             }
