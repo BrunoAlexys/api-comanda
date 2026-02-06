@@ -103,7 +103,7 @@ class FeeServiceImplTest {
             feeService.findById(nonExistentId);
         });
 
-        assertEquals("Fee não encontrada!", exception.getMessage());
+        assertEquals("Taxa não encontrada!", exception.getMessage());
 
         verify(feeRepository, times(1)).findById(nonExistentId);
     }

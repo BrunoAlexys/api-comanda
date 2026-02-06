@@ -58,10 +58,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Employee getEmployeeByEmail(String email) {
         var employee = this.employeeRepository.findByEmailIgnoreCase(email);
-        if (employee == null) {
+
+        if (employee.isEmpty()) {
             throw new UserNotFoundException("Funcionário não encontrado com o email: " + email);
         }
 
-        return employee;
+        return employee.get();
     }
 }

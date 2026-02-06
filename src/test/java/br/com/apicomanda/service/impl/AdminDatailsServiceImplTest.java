@@ -4,6 +4,7 @@ import br.com.apicomanda.domain.Admin;
 import br.com.apicomanda.domain.Profile;
 import br.com.apicomanda.enums.StatusUser;
 import br.com.apicomanda.repository.AdminRepository;
+import br.com.apicomanda.repository.EmployeeRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -23,6 +25,9 @@ class AdminDatailsServiceImplTest {
 
     @Mock
     private AdminRepository adminRepository;
+
+    @Mock
+    private EmployeeRepository employeeRepository;
 
     @InjectMocks
     private UserDatailsServiceImpl userDetailsService;
@@ -37,10 +42,10 @@ class AdminDatailsServiceImplTest {
                 .email(email)
                 .password("encodedPassword")
                 .profiles(List.of(adminProfile))
-                .status(StatusUser.ENABLED.getStatusValue()) // true
+                .status(StatusUser.ENABLED.getStatusValue())
                 .build();
 
-        when(adminRepository.findByEmail(email)).thenReturn(userFromRepo);
+        when(adminRepository.findByEmail(email)).thenReturn(Optional.of(userFromRepo));
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
@@ -63,11 +68,11 @@ class AdminDatailsServiceImplTest {
                 .id(2L)
                 .email(email)
                 .password("anotherPassword")
-                .profiles(List.of()) // Sem perfis
-                .status(StatusUser.DISABLED.getStatusValue()) // false
+                .profiles(List.of())
+                .status(StatusUser.DISABLED.getStatusValue())
                 .build();
 
-        when(adminRepository.findByEmail(email)).thenReturn(userFromRepo);
+        when(adminRepository.findByEmail(email)).thenReturn(Optional.of(userFromRepo));
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
@@ -83,13 +88,15 @@ class AdminDatailsServiceImplTest {
     void shouldThrowUsernameNotFoundExceptionWhenEmailDoesNotExist() {
         String nonExistentEmail = "notfound@example.com";
 
-        when(adminRepository.findByEmail(nonExistentEmail)).thenReturn(null);
+        when(adminRepository.findByEmail(nonExistentEmail)).thenReturn(Optional.empty());
+        when(employeeRepository.findByEmailIgnoreCase(nonExistentEmail)).thenReturn(Optional.empty());
 
         var exception = assertThrows(UsernameNotFoundException.class, () -> {
             userDetailsService.loadUserByUsername(nonExistentEmail);
         });
 
-        String expectedErrorMessage = "Usuário com o email: " + nonExistentEmail + " não encontrado.";
+
+        String expectedErrorMessage = "Usuário não encontrado: " + nonExistentEmail;
         assertEquals(expectedErrorMessage, exception.getMessage());
 
         verify(adminRepository, times(1)).findByEmail(nonExistentEmail);

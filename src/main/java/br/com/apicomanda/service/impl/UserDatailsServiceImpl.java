@@ -25,25 +25,25 @@ public class UserDatailsServiceImpl implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         var user = this.adminRepository.findByEmail(username);
-        if (user != null) {
+        if (user.isPresent()) {
             return new UserSS(
-                    user.getId(),
-                    user.getEmail(),
-                    user.getPassword(),
-                    user.getProfiles().stream().map(p -> new SimpleGrantedAuthority(p.getName())).collect(Collectors.toSet()),
-                    user.isStatus(),
+                    user.get().getId(),
+                    user.get().getEmail(),
+                    user.get().getPassword(),
+                    user.get().getProfiles().stream().map(p -> new SimpleGrantedAuthority(p.getName())).collect(Collectors.toSet()),
+                    user.get().isStatus(),
                     false
             );
         }
 
         var employee = this.employeeRepository.findByEmailIgnoreCase(username);
-        if (employee != null && employee.getActive() == StatusUser.ENABLED.getStatusValue()) {
+        if (employee.isPresent() && employee.get().getActive() == StatusUser.ENABLED.getStatusValue()) {
             return new UserSS(
-                    employee.getId(),
-                    employee.getEmail(),
-                    employee.getPassword(),
-                    employee.getProfiles().stream().map(p -> new SimpleGrantedAuthority(p.getName())).collect(Collectors.toSet()),
-                    employee.getActive(),
+                    employee.get().getId(),
+                    employee.get().getEmail(),
+                    employee.get().getPassword(),
+                    employee.get().getProfiles().stream().map(p -> new SimpleGrantedAuthority(p.getName())).collect(Collectors.toSet()),
+                    employee.get().getActive(),
                     true
             );
         }
