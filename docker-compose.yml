@@ -13,3 +13,18 @@ services:
     command: redis-server --requirepass Redis2019!
     ports:
       - "6379:6379"
+  app:
+    build: .
+    container_name: spring-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/comanda
+      SPRING_DATASOURCE_USERNAME: comanda
+      SPRING_DATASOURCE_PASSWORD: comanda
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_PASSWORD: Redis2019!

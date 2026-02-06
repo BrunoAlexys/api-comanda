@@ -41,7 +41,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.PATCH, VERSION + "/api/orders/**").permitAll()
                         .requestMatchers(HttpMethod.POST, VERSION + "/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, VERSION + "/api/admins").permitAll()
+                        .requestMatchers(HttpMethod.POST, VERSION + "/api/admin").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers(VERSION + "/api/orders/kitchen/**").permitAll()
                         .requestMatchers(VERSION + "/api/orders/kitchen/statistics/average-time/**").permitAll()

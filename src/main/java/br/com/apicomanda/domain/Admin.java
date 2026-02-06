@@ -52,6 +52,10 @@ public class Admin {
     @Builder.Default
     @ToString.Exclude
     private List<Category> categories = new ArrayList<>();
+    @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    @ToString.Exclude
+    private List<Tables> tables = new ArrayList<>();
 
     public static Admin toEntity(CreateAdminRequest userDTO, String encryptedPassword, Profile profile) {
         return Admin.builder()
