@@ -9,8 +9,11 @@ import br.com.apicomanda.repository.TablesRepository;
 import br.com.apicomanda.service.TableService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -22,6 +25,7 @@ public class TableServiceImpl implements TableService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "tables_fix", allEntries = true)
     public void createTable(TableRequest tableRequest) {
         var admin = this.adminRepository.findById(tableRequest.adminId())
                 .orElseThrow(() -> new IllegalArgumentException("Admin not found"));
@@ -37,10 +41,11 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
+    @Cacheable(value = "tables_fix", key = "#adminId")
     public List<TablesResponse> findAllTables(Long adminId) {
         List<Tables> list = this.tablesRepository.findAllByAdminId(adminId);
-        return list.stream()
+        return new ArrayList<>(list.stream()
                 .map(TablesResponse::new)
-                .toList();
+                .toList());
     }
 }
