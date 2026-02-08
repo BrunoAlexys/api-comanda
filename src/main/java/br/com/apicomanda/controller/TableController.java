@@ -29,7 +29,8 @@ public class TableController {
 
     @GetMapping("{adminId}")
     @PreAuthorize(ApplicationConstants.IS_ADMIN_OR_USER)
-    public ResponseEntity<List<TablesResponse>> getTables(@PathVariable("adminId") Long adminId) {
-        return ResponseEntity.ok(tableService.findAllTables(adminId));
+    public ResponseEntity<List<TablesResponse>> getAllTables(@PathVariable("adminId") Long adminId) {
+        var tables = this.tableService.findAllTables(adminId);
+        return ResponseEntity.ok(tables);
     }
 }
