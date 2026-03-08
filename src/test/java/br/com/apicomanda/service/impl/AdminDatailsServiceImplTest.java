@@ -1,9 +1,10 @@
 package br.com.apicomanda.service.impl;
 
+import br.com.apicomanda.domain.Admin;
 import br.com.apicomanda.domain.Profile;
-import br.com.apicomanda.domain.User;
 import br.com.apicomanda.enums.StatusUser;
-import br.com.apicomanda.repository.UserRepository;
+import br.com.apicomanda.repository.AdminRepository;
+import br.com.apicomanda.repository.EmployeeRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,10 +21,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class UserDatailsServiceImplTest {
+class AdminDatailsServiceImplTest {
 
     @Mock
-    private UserRepository userRepository;
+    private AdminRepository adminRepository;
+
+    @Mock
+    private EmployeeRepository employeeRepository;
 
     @InjectMocks
     private UserDatailsServiceImpl userDetailsService;
@@ -33,15 +37,15 @@ class UserDatailsServiceImplTest {
     void shouldLoadUserByUsernameSuccessfullyWhenUserIsEnabled() {
         String email = "test@example.com";
         var adminProfile = new Profile(1L, "ROLE_ADMIN");
-        var userFromRepo = User.builder()
+        var userFromRepo = Admin.builder()
                 .id(1L)
                 .email(email)
                 .password("encodedPassword")
                 .profiles(List.of(adminProfile))
-                .status(StatusUser.ENABLED.getStatusValue()) // true
+                .status(StatusUser.ENABLED.getStatusValue())
                 .build();
 
-        when(userRepository.findByEmail(email)).thenReturn(userFromRepo);
+        when(adminRepository.findByEmail(email)).thenReturn(Optional.of(userFromRepo));
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
@@ -53,22 +57,22 @@ class UserDatailsServiceImplTest {
                         .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN")),
                 "O usuário deveria ter a permissão ROLE_ADMIN");
 
-        verify(userRepository, times(1)).findByEmail(email);
+        verify(adminRepository, times(1)).findByEmail(email);
     }
 
     @Test
     @DisplayName("Deve carregar usuário, mas marcá-lo como desabilitado, quando status for inativo")
     void shouldLoadUserAsDisabledWhenStatusIsInactive() {
         String email = "disabled@example.com";
-        var userFromRepo = User.builder()
+        var userFromRepo = Admin.builder()
                 .id(2L)
                 .email(email)
                 .password("anotherPassword")
-                .profiles(List.of()) // Sem perfis
-                .status(StatusUser.DISABLED.getStatusValue()) // false
+                .profiles(List.of())
+                .status(StatusUser.DISABLED.getStatusValue())
                 .build();
 
-        when(userRepository.findByEmail(email)).thenReturn(userFromRepo);
+        when(adminRepository.findByEmail(email)).thenReturn(Optional.of(userFromRepo));
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
@@ -76,7 +80,7 @@ class UserDatailsServiceImplTest {
         assertEquals(email, userDetails.getUsername());
         assertFalse(userDetails.isEnabled(), "O usuário deveria estar desabilitado (disabled)");
 
-        verify(userRepository, times(1)).findByEmail(email);
+        verify(adminRepository, times(1)).findByEmail(email);
     }
 
     @Test
@@ -84,15 +88,17 @@ class UserDatailsServiceImplTest {
     void shouldThrowUsernameNotFoundExceptionWhenEmailDoesNotExist() {
         String nonExistentEmail = "notfound@example.com";
 
-        when(userRepository.findByEmail(nonExistentEmail)).thenReturn(null);
+        when(adminRepository.findByEmail(nonExistentEmail)).thenReturn(Optional.empty());
+        when(employeeRepository.findByEmailIgnoreCase(nonExistentEmail)).thenReturn(Optional.empty());
 
         var exception = assertThrows(UsernameNotFoundException.class, () -> {
             userDetailsService.loadUserByUsername(nonExistentEmail);
         });
 
-        String expectedErrorMessage = "Usuário com o email: " + nonExistentEmail + " não encontrado.";
+
+        String expectedErrorMessage = "Usuário não encontrado: " + nonExistentEmail;
         assertEquals(expectedErrorMessage, exception.getMessage());
 
-        verify(userRepository, times(1)).findByEmail(nonExistentEmail);
+        verify(adminRepository, times(1)).findByEmail(nonExistentEmail);
     }
 }

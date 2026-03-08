@@ -1,15 +1,14 @@
 package br.com.apicomanda.service.impl;
 
-import br.com.apicomanda.domain.Fee;
-import br.com.apicomanda.domain.Menu;
-import br.com.apicomanda.domain.Order;
-import br.com.apicomanda.domain.User;
+import br.com.apicomanda.domain.*;
 import br.com.apicomanda.dto.order.CreateOrderDTO;
 import br.com.apicomanda.dto.order.OrderItemDTO;
+import br.com.apicomanda.exception.MenuException;
 import br.com.apicomanda.repository.FeeRepository;
 import br.com.apicomanda.repository.MenuRepository;
 import br.com.apicomanda.repository.OrderRepository;
-import br.com.apicomanda.service.UserService;
+import br.com.apicomanda.service.AdminService;
+import br.com.apicomanda.service.EmployeeService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,7 +41,10 @@ class OrderServiceImplTest {
     private FeeRepository feeRepository;
 
     @Mock
-    private UserService userService;
+    private AdminService adminService;
+
+    @Mock
+    private EmployeeService employeeService;
 
     @Mock
     private SimpMessagingTemplate simpMessagingTemplate;
@@ -63,23 +65,27 @@ class OrderServiceImplTest {
         List<OrderItemDTO> items = List.of(itemDto);
         List<Long> feesIds = List.of(feeId);
 
-        var requestDTO = new CreateOrderDTO(1, items, feesIds, "Sem cebola", "1");
+        var requestDTO = new CreateOrderDTO(1, items, feesIds, "Sem cebola", 2L);
 
         var menu = Menu.builder().id(menuId).name("Pizza").price(menuPrice).build();
         var fee = Fee.builder().id(feeId).name("Serviço").percentage(feePercentage).build();
 
-        var user = new User();
+        var user = new Admin();
         user.setId(1L);
+
+        var employee = new Employee();
+        employee.setId(2L);
+        employee.setAdmin(user);
 
         when(menuRepository.findById(menuId)).thenReturn(Optional.of(menu));
         when(feeRepository.findAllById(feesIds)).thenReturn(List.of(fee));
-        when(userService.getUserById(anyLong())).thenReturn(user);
+        when(adminService.getAdminById(anyLong())).thenReturn(user);
+        when(employeeService.getEmployeeById(anyLong())).thenReturn(employee);
 
-        // CORREÇÃO: Simula o banco gerando ID e DATA
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order order = invocation.getArgument(0);
             order.setId(1L);
-            order.setCreatedAt(LocalDateTime.now()); // <--- AQUI ESTAVA O ERRO
+            order.setCreatedAt(LocalDateTime.now());
             return order;
         });
 
@@ -104,6 +110,9 @@ class OrderServiceImplTest {
         assertEquals(1, savedOrder.getAppliedFees().size());
 
         verify(simpMessagingTemplate, times(1)).convertAndSend(anyString(), any(Object.class));
+        verify(employeeService, times(1)).getEmployeeById(anyLong());
+        verify(adminService, times(1)).getAdminById(anyLong());
+        verify(orderRepository, times(1)).save(orderCaptor.capture());
     }
 
     @Test
@@ -117,21 +126,25 @@ class OrderServiceImplTest {
         List<OrderItemDTO> items = List.of(itemDto);
         List<Long> feesIds = Collections.emptyList();
 
-        var requestDTO = new CreateOrderDTO(2, items, feesIds, null, "2");
+        var requestDTO = new CreateOrderDTO(2, items, feesIds, null, 2L);
 
         var menu = Menu.builder().id(menuId).name("Hamburguer").price(menuPrice).build();
 
-        var user = new User();
+        var user = new Admin();
         user.setId(2L);
 
-        when(menuRepository.findById(menuId)).thenReturn(Optional.of(menu));
-        when(userService.getUserById(anyLong())).thenReturn(user);
+        var employee = new Employee();
+        employee.setId(2L);
+        employee.setAdmin(user);
 
-        // CORREÇÃO: Simula o banco gerando ID e DATA
+        when(menuRepository.findById(menuId)).thenReturn(Optional.of(menu));
+        when(adminService.getAdminById(anyLong())).thenReturn(user);
+        when(employeeService.getEmployeeById(anyLong())).thenReturn(employee);
+
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order order = invocation.getArgument(0);
             order.setId(2L);
-            order.setCreatedAt(LocalDateTime.now()); // <--- CORREÇÃO
+            order.setCreatedAt(LocalDateTime.now());
             return order;
         });
 
@@ -147,6 +160,8 @@ class OrderServiceImplTest {
         assertEquals(0, BigDecimal.valueOf(30.00).compareTo(savedOrder.getFinalTotalPrice()));
 
         verify(feeRepository, never()).findAllById(any());
+        verify(employeeService, times(1)).getEmployeeById(anyLong());
+        verify(adminService, times(1)).getAdminById(anyLong());
     }
 
     @Test
@@ -157,11 +172,11 @@ class OrderServiceImplTest {
         List<OrderItemDTO> items = List.of(itemDto);
         List<Long> feesIds = Collections.emptyList();
 
-        var requestDTO = new CreateOrderDTO(1, items, feesIds, null, "1");
+        var requestDTO = new CreateOrderDTO(1, items, feesIds, null,  2L);
 
         when(menuRepository.findById(invalidMenuId)).thenReturn(Optional.empty());
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        MenuException exception = assertThrows(MenuException.class, () -> {
             orderService.saveOrder(requestDTO);
         });
 
@@ -175,18 +190,22 @@ class OrderServiceImplTest {
         List<OrderItemDTO> items = Collections.emptyList();
         List<Long> feesIds = Collections.emptyList();
 
-        var requestDTO = new CreateOrderDTO(1, items, feesIds, null, "1");
+        var requestDTO = new CreateOrderDTO(1, items, feesIds, null, 2L);
 
-        var user = new User();
+        var user = new Admin();
         user.setId(1L);
 
-        when(userService.getUserById(anyLong())).thenReturn(user);
+        var employee = new Employee();
+        employee.setId(2L);
+        employee.setAdmin(user);
 
-        // CORREÇÃO: Simula o banco gerando ID e DATA
+        when(adminService.getAdminById(anyLong())).thenReturn(user);
+        when(employeeService.getEmployeeById(anyLong())).thenReturn(employee);
+
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order order = invocation.getArgument(0);
             order.setId(3L);
-            order.setCreatedAt(LocalDateTime.now()); // <--- CORREÇÃO
+            order.setCreatedAt(LocalDateTime.now());
             return order;
         });
 
@@ -200,5 +219,9 @@ class OrderServiceImplTest {
         assertEquals(BigDecimal.ZERO, savedOrder.getTotalOrderPrice());
         assertEquals(BigDecimal.ZERO, savedOrder.getFinalTotalPrice());
         assertTrue(savedOrder.getItems().isEmpty());
+
+        verify(orderRepository, times(1)).save(orderCaptor.capture());
+        verify(employeeService, times(1)).getEmployeeById(anyLong());
+        verify(adminService, times(1)).getAdminById(anyLong());
     }
 }

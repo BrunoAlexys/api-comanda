@@ -6,7 +6,7 @@ public record CreateMenuRequestDTO(
         String name,
         String description,
         BigDecimal price,
-        Long userId,
+        Long adminId,
         Long categoryId
 ) {
 }

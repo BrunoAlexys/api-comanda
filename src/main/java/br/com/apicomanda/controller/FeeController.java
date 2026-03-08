@@ -27,10 +27,10 @@ public class FeeController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @GetMapping("/user/{userId}")
-    @PreAuthorize(ApplicationConstants.IS_ADMIN)
-    public ResponseEntity<List<FeeResponseDTO>> findAllFeeUser(@PathVariable("userId") Long userId) {
-        List<FeeResponseDTO> feeList = this.feeService.findAllById(userId);
+    @GetMapping("/user/{adminId}")
+    @PreAuthorize(ApplicationConstants.IS_ADMIN_OR_USER)
+    public ResponseEntity<List<FeeResponseDTO>> findAllFeeAdmin(@PathVariable("adminId") Long adminId) {
+        List<FeeResponseDTO> feeList = this.feeService.findAllById(adminId);
         return new ResponseEntity<>(feeList, HttpStatus.OK);
     }
 }

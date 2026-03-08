@@ -3,6 +3,7 @@ package br.com.apicomanda.controller;
 import br.com.apicomanda.dto.auth.RefreshTokenDTO;
 import br.com.apicomanda.dto.auth.TokenResponse;
 import br.com.apicomanda.dto.auth.CredentialRequestDTO;
+import br.com.apicomanda.dto.google.GoogleCodeDTO;
 import br.com.apicomanda.helpers.ApplicationConstants;
 import br.com.apicomanda.service.impl.AuthServiceImpl;
 import jakarta.validation.Valid;
@@ -34,6 +35,12 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refreshToken(@RequestBody @Valid RefreshTokenDTO refreshToken) {
         var tokenResponse = this.authServiceImpl.refreshToken(refreshToken);
+        return ResponseEntity.ok(tokenResponse);
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<TokenResponse> loginGoogle(@RequestBody @Valid GoogleCodeDTO data) {
+        var tokenResponse = this.authServiceImpl.loginGoogle(data);
         return ResponseEntity.ok(tokenResponse);
     }
 }

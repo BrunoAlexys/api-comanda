@@ -11,18 +11,19 @@ import java.util.List;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    List<Order> findByUserIdAndCreatedAtBetween(Long userId, LocalDateTime start, LocalDateTime end);
+
+    List<Order> findByAdminIdAndCreatedAtBetween(Long adminId, LocalDateTime start, LocalDateTime end);
 
     @Query(value = """
                 SELECT AVG(EXTRACT(EPOCH FROM (finished_at - created_at)))
                 FROM orders
-                WHERE user_id = :userId 
+                WHERE admin_id = :adminId
                 AND created_at BETWEEN :startOfDay AND :endOfDay
                 AND status_order = 'DONE'
                 AND finished_at IS NOT NULL
             """, nativeQuery = true)
     Double getAveragePreparationTimeInSeconds(
-            @Param("userId") Long userId,
+            @Param("adminId") Long adminId,
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay
     );

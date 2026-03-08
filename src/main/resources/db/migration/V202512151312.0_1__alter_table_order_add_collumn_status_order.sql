@@ -1,2 +1,0 @@
-ALTER TABLE orders
-ADD COLUMN status_order VARCHAR(50) NOT NULL;

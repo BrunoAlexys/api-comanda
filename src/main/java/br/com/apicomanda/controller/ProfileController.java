@@ -5,6 +5,7 @@ import br.com.apicomanda.helpers.ApplicationConstants;
 import br.com.apicomanda.service.ProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +22,6 @@ public class ProfileController {
     @PostMapping
     public ResponseEntity<Void> saveProfile(@RequestBody @Valid CreateProfileDTO request) {
         this.profileService.saveProfile(request);
-        return ResponseEntity.status(201).build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

@@ -1,9 +1,11 @@
 package br.com.apicomanda.service.impl;
 
+import br.com.apicomanda.domain.Admin;
 import br.com.apicomanda.domain.Category;
 import br.com.apicomanda.dto.category.CategoryRequestDTO;
 import br.com.apicomanda.dto.category.CategoryResponseDTO;
 import br.com.apicomanda.exception.CategoryNotFound;
+import br.com.apicomanda.repository.AdminRepository;
 import br.com.apicomanda.repository.CategoryRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,18 +27,22 @@ class CategoryServiceImplTest {
     @Mock
     private CategoryRepository repository;
 
+    @Mock
+    private AdminRepository adminRepository;
+
     @InjectMocks
     private CategoryServiceImpl categoryService;
 
     @Test
     @DisplayName("Deve criar uma Categoria com sucesso")
     void shouldCreateCategorySuccessfully() {
-        var requestDTO = new CategoryRequestDTO("Bebidas");
+        var requestDTO = new CategoryRequestDTO("Bebidas", 1L);
         var expectedCategory = Category.builder()
                 .id(1L)
                 .name("Bebidas")
                 .build();
 
+        when(adminRepository.findById(anyLong())).thenReturn(Optional.of(new Admin()));
         when(repository.save(any(Category.class))).thenReturn(expectedCategory);
 
         Category actualCategory = categoryService.createCategory(requestDTO);
@@ -46,6 +52,7 @@ class CategoryServiceImplTest {
         assertEquals(expectedCategory.getName(), actualCategory.getName());
 
         verify(repository, times(1)).save(any(Category.class));
+        verify(adminRepository, times(1)).findById(requestDTO.adminId());
     }
 
     @Test

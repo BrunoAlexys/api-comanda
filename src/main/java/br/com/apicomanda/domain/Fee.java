@@ -21,7 +21,7 @@ public class Fee {
     private String name;
     private BigDecimal percentage;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "admin_id")
     @JsonIgnore
-    private User user;
+    private Admin admin;
 }

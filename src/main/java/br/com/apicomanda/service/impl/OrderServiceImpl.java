@@ -5,11 +5,14 @@ import br.com.apicomanda.dto.order.CreateOrderDTO;
 import br.com.apicomanda.dto.order.KitchenOrderDTO;
 import br.com.apicomanda.dto.order.OrderItemDTO;
 import br.com.apicomanda.enums.StatusOrder;
+import br.com.apicomanda.exception.MenuException;
+import br.com.apicomanda.exception.OrderException;
 import br.com.apicomanda.repository.FeeRepository;
 import br.com.apicomanda.repository.MenuRepository;
 import br.com.apicomanda.repository.OrderRepository;
+import br.com.apicomanda.service.AdminService;
+import br.com.apicomanda.service.EmployeeService;
 import br.com.apicomanda.service.OrderService;
-import br.com.apicomanda.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +43,8 @@ public class OrderServiceImpl implements OrderService {
     private final MenuRepository menuRepository;
     private final FeeRepository feeRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
-    private final UserService userService;
+    private final AdminService adminService;
+    private final EmployeeService employeeService;
 
     @Override
     @Transactional
@@ -52,10 +56,10 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal totalFeesValue = calculateTotalFeesValue(orderFees);
         BigDecimal finalTotalPrice = totalOrderPrice.add(totalFeesValue);
 
-        Long userId = Long.parseLong(request.userId());
-        var user = userService.getUserById(userId);
+        var employee = employeeService.getEmployeeById(request.userId());
+        var admin = this.adminService.getAdminById(employee.getAdmin().getId());
 
-        Order order = buildOrder(request, orderItems, orderFees, totalOrderPrice, totalFeesValue, finalTotalPrice, StatusOrder.PENDING, user);
+        Order order = buildOrder(request, orderItems, orderFees, totalOrderPrice, totalFeesValue, finalTotalPrice, StatusOrder.PENDING, admin, employee);
         Order savedOrder = this.orderRepository.save(order);
 
         notifyKitchen(savedOrder);
@@ -63,13 +67,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Cacheable(value = "kitchenOrders", key = "#a0")
-    public List<KitchenOrderDTO> fetchOrderByDate(Long userId) {
-        log.info("Fetching orders for user {}", userId);
+    public List<KitchenOrderDTO> fetchOrderByDate(Long adminId) {
+        log.info("Fetching orders for user {}", adminId);
         LocalDate today = LocalDate.now();
         LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
 
-        return this.orderRepository.findByUserIdAndCreatedAtBetween(userId, startOfDay, endOfDay)
+        return this.orderRepository.findByAdminIdAndCreatedAtBetween(adminId, startOfDay, endOfDay)
                 .stream()
                 .map(this::mapToKitchenDTO)
                 .collect(Collectors.toList());
@@ -80,7 +84,7 @@ public class OrderServiceImpl implements OrderService {
     @CacheEvict(value = "kitchenOrders", allEntries = true)
     public void updateOrderStatus(Long orderId, String newStatus) {
         Order order = this.orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new OrderException("Pedido não encontrado: " + orderId));
 
         try {
             StatusOrder newStatusEnum = StatusOrder.valueOf(newStatus.toUpperCase());
@@ -96,16 +100,16 @@ public class OrderServiceImpl implements OrderService {
             Order orderUpdate = this.orderRepository.save(order);
             notifyKitchen(orderUpdate);
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid status: " + newStatus);
+            throw new OrderException("Status inválido: " + newStatus);
         }
     }
 
     @Override
-    public Double calculateAverageTime(Long userId) {
+    public Double calculateAverageTime(Long adminId) {
         LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
         LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
 
-        Double averageSeconds = orderRepository.getAveragePreparationTimeInSeconds(userId, startOfDay, endOfDay);
+        Double averageSeconds = orderRepository.getAveragePreparationTimeInSeconds(adminId, startOfDay, endOfDay);
 
         if (averageSeconds == null) {
             return 0.0;
@@ -181,7 +185,7 @@ public class OrderServiceImpl implements OrderService {
 
     private OrderItem mapToOrderItem(OrderItemDTO itemDTO) {
         Menu menu = this.menuRepository.findById(itemDTO.menuId())
-                .orElseThrow(() -> new IllegalArgumentException("Menu não encontrado: " + itemDTO.menuId()));
+                .orElseThrow(() -> new MenuException("Menu não encontrado: " + itemDTO.menuId()));
         return OrderItem.builder()
                 .menu(menu)
                 .quantity(itemDTO.quantity())
@@ -202,7 +206,8 @@ public class OrderServiceImpl implements OrderService {
                              BigDecimal totalFeesValue,
                              BigDecimal finalTotalPrice,
                              StatusOrder statusOrder,
-                             User user
+                             Admin admin,
+                             Employee employee
     ) {
         return Order.builder()
                 .tableNumber(request.tableNumber())
@@ -213,7 +218,8 @@ public class OrderServiceImpl implements OrderService {
                 .totalFeesValue(totalFeesValue)
                 .finalTotalPrice(finalTotalPrice)
                 .statusOrder(statusOrder)
-                .user(user)
+                .admin(admin)
+                .employee(employee)
                 .build();
     }
 
