@@ -8,10 +8,13 @@ import br.com.apicomanda.service.MenuService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -21,10 +24,13 @@ public class MenuController {
 
     private final MenuService menuService;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize(ApplicationConstants.IS_ADMIN)
-    public ResponseEntity<Void> createMenu(@RequestBody @Valid CreateMenuRequestDTO requestDTO) {
-        this.menuService.createMenu(requestDTO);
+    public ResponseEntity<Void> createMenu(
+            @RequestPart("data") @Valid CreateMenuRequestDTO requestDTO,
+            @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
+
+        this.menuService.createMenu(requestDTO, file);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

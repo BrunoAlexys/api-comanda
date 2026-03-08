@@ -21,6 +21,8 @@ public class Menu {
     private String name;
     private String description;
     private BigDecimal price;
+    @Column(name = "image_url", length = 512)
+    private String imageUrl;
     @ManyToOne
     @JoinColumn(name = "admin_id")
     private Admin admin;
