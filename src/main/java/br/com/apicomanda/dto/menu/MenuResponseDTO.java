@@ -10,7 +10,8 @@ public record MenuResponseDTO(
         String name,
         String description,
         BigDecimal price,
-        CategoryResponseDTO category
+        CategoryResponseDTO category,
+        String imageUrl
 ) {
     public MenuResponseDTO(Menu menu) {
         this(
@@ -18,7 +19,8 @@ public record MenuResponseDTO(
                 menu.getName(),
                 menu.getDescription(),
                 menu.getPrice(),
-                new CategoryResponseDTO(menu.getCategory())
+                new CategoryResponseDTO(menu.getCategory()),
+                menu.getImageUrl()
         );
     }
 }

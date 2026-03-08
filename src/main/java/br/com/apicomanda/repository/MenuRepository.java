@@ -19,7 +19,8 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
     List<CategoryResponseDTO> findCategoriesByUserId(@Param("userId") Long userId);
     @Query("SELECT new br.com.apicomanda.dto.menu.MenuResponseDTO(" +
             "m.id, m.name, m.description, m.price, " +
-            "new br.com.apicomanda.dto.category.CategoryResponseDTO(c.id, c.name)) " +
+            "new br.com.apicomanda.dto.category.CategoryResponseDTO(c.id, c.name), " +
+            "m.imageUrl) " +
             "FROM Menu m JOIN m.category c " +
             "WHERE m.admin.id = :userId AND c.id = :categoryId")
     List<MenuResponseDTO> findMenuByUserIdAndCategoryId(@Param("userId") Long userId, @Param("categoryId") Long categoryId);
