@@ -55,7 +55,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "https://existing-hedi-api-comanda-46668790.koyeb.app"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173",
+                "https://existing-hedi-api-comanda-46668790.koyeb.app",
+                "https://kds-posrmcs3o-brunoalexys-projects.vercel.app"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
         configuration.setAllowCredentials(true);
