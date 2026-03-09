@@ -57,7 +57,7 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(List.of("http://localhost:5173",
                 "https://existing-hedi-api-comanda-46668790.koyeb.app",
-                "https://kds-posrmcs3o-brunoalexys-projects.vercel.app"
+                "https://kds-delta.vercel.app"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
