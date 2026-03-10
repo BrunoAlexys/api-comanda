@@ -11,4 +11,5 @@ public interface MenuService {
     void createMenu(CreateMenuRequestDTO requestDTO, MultipartFile file);
     List<MenuResponseDTO> findAllMenuAdminByIdAndCategory(Long userId, Long categoryId);
     List<CategoryResponseDTO> getMenuCategoriesByAdminID(Long userId);
+        List<MenuResponseDTO> findAllMenuAdminById(Long userId);
 }
