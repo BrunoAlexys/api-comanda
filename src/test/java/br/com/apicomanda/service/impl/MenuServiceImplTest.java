@@ -8,13 +8,16 @@ import br.com.apicomanda.dto.menu.MenuResponseDTO;
 import br.com.apicomanda.repository.MenuRepository;
 import br.com.apicomanda.service.CategoryService;
 import br.com.apicomanda.service.AdminService;
+import br.com.apicomanda.service.CloudinaryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -37,9 +40,12 @@ class MenuServiceImplTest {
     @InjectMocks
     private MenuServiceImpl menuService;
 
+    @Mock
+    private CloudinaryService cloudinaryService;
+
     @Test
     @DisplayName("Deve criar um Menu com sucesso")
-    void shouldCreateMenuSuccessfully() {
+    void shouldCreateMenuSuccessfully() throws IOException {
         Long userId = 1L;
         Long categoryId = 2L;
         var requestDTO = new CreateMenuRequestDTO("Hamburguer", "Delicioso", BigDecimal.valueOf(25.0), userId, categoryId);
@@ -48,11 +54,13 @@ class MenuServiceImplTest {
         user.setId(userId);
 
         var categoryDto = new CategoryResponseDTO(categoryId, "Lanches");
+        MultipartFile file = mock(MultipartFile.class);
 
         when(adminService.getAdminById(userId)).thenReturn(user);
         when(categoryService.getCategory(categoryId)).thenReturn(categoryDto);
+        when(cloudinaryService.uploadImage(any(MultipartFile.class))).thenReturn("http://url-falsa-da-imagem.com/img.png");
 
-        menuService.createMenu(requestDTO);
+        menuService.createMenu(requestDTO, file);
 
         verify(adminService, times(1)).getAdminById(userId);
         verify(categoryService, times(1)).getCategory(categoryId);
@@ -67,8 +75,8 @@ class MenuServiceImplTest {
 
         var categoryDto = new CategoryResponseDTO(categoryId, "Lanches");
 
-        var menuDto1 = new MenuResponseDTO(10L, "X-Bacon", "Com bacon", BigDecimal.valueOf(30.0), categoryDto);
-        var menuDto2 = new MenuResponseDTO(20L, "X-Salada", "Com salada", BigDecimal.valueOf(20.0), categoryDto);
+        var menuDto1 = new MenuResponseDTO(10L, "X-Bacon", "Com bacon", BigDecimal.valueOf(30.0), categoryDto, "image");
+        var menuDto2 = new MenuResponseDTO(20L, "X-Salada", "Com salada", BigDecimal.valueOf(20.0), categoryDto, "image");
         var menuList = List.of(menuDto1, menuDto2);
 
         when(menuRepository.findMenuByUserIdAndCategoryId(userId, categoryId)).thenReturn(menuList);
