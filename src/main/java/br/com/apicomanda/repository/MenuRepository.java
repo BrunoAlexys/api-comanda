@@ -1,5 +1,6 @@
 package br.com.apicomanda.repository;
 
+import br.com.apicomanda.domain.Admin;
 import br.com.apicomanda.domain.Menu;
 import br.com.apicomanda.dto.category.CategoryResponseDTO;
 import br.com.apicomanda.dto.menu.MenuResponseDTO;
@@ -24,4 +25,12 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
             "FROM Menu m JOIN m.category c " +
             "WHERE m.admin.id = :userId AND c.id = :categoryId")
     List<MenuResponseDTO> findMenuByUserIdAndCategoryId(@Param("userId") Long userId, @Param("categoryId") Long categoryId);
+
+    @Query("SELECT new br.com.apicomanda.dto.menu.MenuResponseDTO(" +
+            "m.id, m.name, m.description, m.price, " +
+            "new br.com.apicomanda.dto.category.CategoryResponseDTO(c.id, c.name), " +
+            "m.imageUrl) " +
+            "FROM Menu m JOIN m.category c " +
+            "WHERE m.admin.id = :userId")
+    List<MenuResponseDTO> findAllByAdmin(@Param("userId") Long userId);
 }
