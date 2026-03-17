@@ -65,7 +65,7 @@ class OrderServiceImplTest {
         List<OrderItemDTO> items = List.of(itemDto);
         List<Long> feesIds = List.of(feeId);
 
-        var requestDTO = new CreateOrderDTO(1, items, feesIds, "Sem cebola", 2L);
+        var requestDTO = new CreateOrderDTO("1", 1,items, feesIds, "Sem cebola", 2L);
 
         var menu = Menu.builder().id(menuId).name("Pizza").price(menuPrice).build();
         var fee = Fee.builder().id(feeId).name("Serviço").percentage(feePercentage).build();
@@ -126,7 +126,7 @@ class OrderServiceImplTest {
         List<OrderItemDTO> items = List.of(itemDto);
         List<Long> feesIds = Collections.emptyList();
 
-        var requestDTO = new CreateOrderDTO(2, items, feesIds, null, 2L);
+        var requestDTO = new CreateOrderDTO("2", 2,items, feesIds, null, 2L);
 
         var menu = Menu.builder().id(menuId).name("Hamburguer").price(menuPrice).build();
 
@@ -172,7 +172,7 @@ class OrderServiceImplTest {
         List<OrderItemDTO> items = List.of(itemDto);
         List<Long> feesIds = Collections.emptyList();
 
-        var requestDTO = new CreateOrderDTO(1, items, feesIds, null,  2L);
+        var requestDTO = new CreateOrderDTO("3", 3, items, feesIds, null,  2L);
 
         when(menuRepository.findById(invalidMenuId)).thenReturn(Optional.empty());
 
@@ -190,7 +190,7 @@ class OrderServiceImplTest {
         List<OrderItemDTO> items = Collections.emptyList();
         List<Long> feesIds = Collections.emptyList();
 
-        var requestDTO = new CreateOrderDTO(1, items, feesIds, null, 2L);
+        var requestDTO = new CreateOrderDTO("4", 4, items, feesIds, null, 2L);
 
         var user = new Admin();
         user.setId(1L);
