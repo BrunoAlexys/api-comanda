@@ -4,6 +4,7 @@ import br.com.apicomanda.dto.order.CreateOrderDTO;
 import br.com.apicomanda.dto.order.KitchenOrderDTO;
 import br.com.apicomanda.helpers.ApplicationConstants;
 import br.com.apicomanda.service.OrderService;
+import br.com.apicomanda.service.RedisSequenceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
+    private final RedisSequenceService redisSequenceService;
 
     @PostMapping
     public ResponseEntity<Void> createOrder(@RequestBody @Valid CreateOrderDTO request) {
@@ -43,5 +45,11 @@ public class OrderController {
     public ResponseEntity<Double> getAveragePreparationTime(@PathVariable Long userId) {
         Double averageTime = orderService.calculateAverageTime(userId);
         return ResponseEntity.ok(averageTime);
+    }
+
+    @GetMapping("/next-number/{adminId}")
+    public ResponseEntity<String> getNextOrderNumber(@PathVariable("adminId") Long adminId) {
+        String nextNumber = this.redisSequenceService.getNextOrderNumber(adminId);
+        return ResponseEntity.ok(nextNumber);
     }
 }
