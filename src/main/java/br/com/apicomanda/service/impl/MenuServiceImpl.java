@@ -76,4 +76,9 @@ public class MenuServiceImpl implements MenuService {
     public List<CategoryResponseDTO> getMenuCategoriesByAdminID(Long userId) {
         return this.menuRepository.findCategoriesByUserId(userId);
     }
+
+    @Override
+    public List<MenuResponseDTO> findAllMenuAdminById(Long userId) {
+        return this.menuRepository.findAllByAdmin(userId);
+    }
 }

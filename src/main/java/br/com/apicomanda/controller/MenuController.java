@@ -38,7 +38,7 @@ public class MenuController {
     @PreAuthorize(ApplicationConstants.IS_ADMIN_OR_USER)
     public ResponseEntity<List<CategoryResponseDTO>> getCategoryByUserId(@PathVariable("userId") Long userId) {
         List<CategoryResponseDTO> categories = this.menuService.getMenuCategoriesByAdminID(userId);
-        if(categories.isEmpty()){
+        if (categories.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>(categories, HttpStatus.OK);
@@ -46,7 +46,7 @@ public class MenuController {
 
     @GetMapping("/user/{userId}/category/{categoryId}")
     @PreAuthorize(ApplicationConstants.IS_ADMIN_OR_USER)
-public ResponseEntity<List<MenuResponseDTO>> getMenuByUserID(@PathVariable("userId") Long userId, @PathVariable("categoryId") Long categoryId) {
+    public ResponseEntity<List<MenuResponseDTO>> getMenuByUserID(@PathVariable("userId") Long userId, @PathVariable("categoryId") Long categoryId) {
         List<MenuResponseDTO> menus = this.menuService.findAllMenuAdminByIdAndCategory(userId, categoryId);
         if (menus.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -55,4 +55,14 @@ public ResponseEntity<List<MenuResponseDTO>> getMenuByUserID(@PathVariable("user
         return new ResponseEntity<>(menus, HttpStatus.OK);
     }
 
+    @GetMapping("/user/{userId}")
+    @PreAuthorize(ApplicationConstants.IS_ADMIN_OR_USER)
+    public ResponseEntity<List<MenuResponseDTO>> getMenuByUserID(@PathVariable("userId") Long userId) {
+        List<MenuResponseDTO> menus = this.menuService.findAllMenuAdminById(userId);
+        if (menus.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+
+        return new ResponseEntity<>(menus, HttpStatus.OK);
+    }
 }
