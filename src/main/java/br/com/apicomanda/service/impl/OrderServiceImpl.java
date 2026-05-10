@@ -4,15 +4,19 @@ import br.com.apicomanda.domain.*;
 import br.com.apicomanda.dto.order.CreateOrderDTO;
 import br.com.apicomanda.dto.order.KitchenOrderDTO;
 import br.com.apicomanda.dto.order.OrderItemDTO;
+import br.com.apicomanda.dto.tables.TablesResponse;
 import br.com.apicomanda.enums.StatusOrder;
+import br.com.apicomanda.enums.StatusTable;
 import br.com.apicomanda.exception.MenuException;
 import br.com.apicomanda.exception.OrderException;
 import br.com.apicomanda.repository.FeeRepository;
 import br.com.apicomanda.repository.MenuRepository;
 import br.com.apicomanda.repository.OrderRepository;
+import br.com.apicomanda.repository.TablesRepository;
 import br.com.apicomanda.service.AdminService;
 import br.com.apicomanda.service.EmployeeService;
 import br.com.apicomanda.service.OrderService;
+import br.com.apicomanda.service.TableService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,10 +49,11 @@ public class OrderServiceImpl implements OrderService {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final AdminService adminService;
     private final EmployeeService employeeService;
+    private final TablesRepository tablesRepository;
 
     @Override
     @Transactional
-    @CacheEvict(value = "kitchenOrders", allEntries = true)
+    @CacheEvict(value = {"kitchenOrders", "tables_fix"}, allEntries = true)
     public void saveOrder(CreateOrderDTO request) {
         List<OrderItem> orderItems = createOrderItems(request.items());
         BigDecimal totalOrderPrice = calculateTotalOrderPrice(orderItems);
@@ -60,9 +65,17 @@ public class OrderServiceImpl implements OrderService {
         var admin = this.adminService.getAdminById(employee.getAdmin().getId());
 
         Order order = buildOrder(request, orderItems, orderFees, totalOrderPrice, totalFeesValue, finalTotalPrice, StatusOrder.PENDING, admin, employee);
+
+        Tables table = this.tablesRepository.findByNumberTableAndAdminId(request.tableNumber(), admin.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Mesa não encontrada"));
+
+        table.setStatus(StatusTable.OCCUPIED);
+        this.tablesRepository.save(table);
+
         Order savedOrder = this.orderRepository.save(order);
 
         notifyKitchen(savedOrder);
+        notifyTableUpdate(table);
     }
 
     @Override
@@ -226,5 +239,10 @@ public class OrderServiceImpl implements OrderService {
     private void notifyKitchen(Order order) {
         KitchenOrderDTO wsDto = mapToKitchenDTO(order);
         simpMessagingTemplate.convertAndSend("/topic/orders", wsDto);
+    }
+
+    private void notifyTableUpdate(Tables table) {
+        TablesResponse wsDto = new TablesResponse(table);
+        simpMessagingTemplate.convertAndSend("/topic/tables", wsDto);
     }
 }
