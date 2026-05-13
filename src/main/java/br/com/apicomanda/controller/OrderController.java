@@ -2,12 +2,14 @@ package br.com.apicomanda.controller;
 
 import br.com.apicomanda.dto.order.CreateOrderDTO;
 import br.com.apicomanda.dto.order.KitchenOrderDTO;
+import br.com.apicomanda.dto.order.OrderHistoryResponseDTO;
 import br.com.apicomanda.helpers.ApplicationConstants;
 import br.com.apicomanda.service.OrderService;
 import br.com.apicomanda.service.RedisSequenceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -51,5 +53,16 @@ public class OrderController {
     public ResponseEntity<String> getNextOrderNumber(@PathVariable("adminId") Long adminId) {
         String nextNumber = this.redisSequenceService.getNextOrderNumber(adminId);
         return ResponseEntity.ok(nextNumber);
+    }
+
+    @GetMapping("/history/{adminId}")
+    public ResponseEntity<Page<OrderHistoryResponseDTO>> getOrderHistory(
+            @PathVariable("adminId") Long adminId,
+            @RequestParam(value = "search", required = false, defaultValue = "") String search,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+
+        Page<OrderHistoryResponseDTO> history = orderService.getOrderHistory(adminId, search, page, size);
+        return ResponseEntity.ok(history);
     }
 }

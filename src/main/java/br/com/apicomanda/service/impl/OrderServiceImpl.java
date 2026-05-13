@@ -3,6 +3,7 @@ package br.com.apicomanda.service.impl;
 import br.com.apicomanda.domain.*;
 import br.com.apicomanda.dto.order.CreateOrderDTO;
 import br.com.apicomanda.dto.order.KitchenOrderDTO;
+import br.com.apicomanda.dto.order.OrderHistoryResponseDTO;
 import br.com.apicomanda.dto.order.OrderItemDTO;
 import br.com.apicomanda.enums.StatusOrder;
 import br.com.apicomanda.exception.MenuException;
@@ -18,6 +19,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -116,6 +121,34 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return averageSeconds / 60.0;
+    }
+
+    @Override
+    public Page<OrderHistoryResponseDTO> getOrderHistory(Long adminId, String search, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Order> ordersPage = orderRepository.findOrderHistoryWithSearch(adminId, search, pageable);
+        return ordersPage.map(this::mapToOrderHistoryDTO);
+    }
+
+    private OrderHistoryResponseDTO mapToOrderHistoryDTO(Order order) {
+        String mainItems = order.getItems().stream()
+                .map(item -> item.getQuantity() + "x " + item.getMenu().getName())
+                .collect(Collectors.joining(", "));
+
+        String formattedTotal = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"))
+                .format(order.getFinalTotalPrice());
+
+        return new OrderHistoryResponseDTO(
+                order.getId(),
+                "#" + String.format("%04d", order.getId()),
+                order.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                order.getCreatedAt().format(DateTimeFormatter.ofPattern("HH:mm")),
+                "Mesa " + order.getTableNumber(),
+                mainItems,
+                order.getAdditionalComment(),
+                formattedTotal,
+                "Cartão"
+        );
     }
 
     private KitchenOrderDTO mapToKitchenDTO(Order order) {
