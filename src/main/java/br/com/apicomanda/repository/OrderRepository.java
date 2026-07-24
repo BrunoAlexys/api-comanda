@@ -30,12 +30,18 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("endOfDay") LocalDateTime endOfDay
     );
 
-    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN o.items i " +
+    @Query(value = "SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.menu " +
             "WHERE o.admin.id = :adminId " +
             "AND (:search IS NULL OR :search = '' OR " +
             "CAST(o.id AS string) LIKE %:search% OR " +
             "CAST(o.tableNumber AS string) LIKE %:search% OR " +
-            "LOWER(i.menu.name) LIKE LOWER(CONCAT('%', :search, '%')))")
+            "LOWER(i.menu.name) LIKE LOWER(CONCAT('%', :search, '%')))",
+            countQuery = "SELECT COUNT(DISTINCT o) FROM Order o LEFT JOIN o.items i " +
+                    "WHERE o.admin.id = :adminId " +
+                    "AND (:search IS NULL OR :search = '' OR " +
+                    "CAST(o.id AS string) LIKE %:search% OR " +
+                    "CAST(o.tableNumber AS string) LIKE %:search% OR " +
+                    "LOWER(i.menu.name) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<Order> findOrderHistoryWithSearch(
             @Param("adminId") Long adminId,
             @Param("search") String search,

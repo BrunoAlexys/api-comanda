@@ -147,7 +147,7 @@ public class OrderServiceImpl implements OrderService {
                 mainItems,
                 order.getAdditionalComment(),
                 formattedTotal,
-                "Cartão"
+                null
         );
     }
 

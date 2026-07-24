@@ -5,7 +5,7 @@ COPY pom.xml .
 RUN mvn dependency:go-offline
 
 COPY src ./src
-RUN mvn clean package spring-boot:repackage -DskipTests
+RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
@@ -13,7 +13,7 @@ WORKDIR /app
 RUN addgroup --system spring && adduser --system spring --ingroup spring
 USER spring:spring
 
-COPY --from=build /app/target/api-comanda-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
 

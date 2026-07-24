@@ -7,11 +7,15 @@ import br.com.apicomanda.helpers.ApplicationConstants;
 import br.com.apicomanda.service.OrderService;
 import br.com.apicomanda.service.RedisSequenceService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +24,7 @@ import java.util.List;
 @RequestMapping(ApplicationConstants.VERSION + "/api/orders")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class OrderController {
 
     private final OrderService orderService;
@@ -59,8 +64,14 @@ public class OrderController {
     public ResponseEntity<Page<OrderHistoryResponseDTO>> getOrderHistory(
             @PathVariable("adminId") Long adminId,
             @RequestParam(value = "search", required = false, defaultValue = "") String search,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size) {
+            @RequestParam(value = "page", defaultValue = "0") @Min(0) int page,
+            @RequestParam(value = "size", defaultValue = "10") @Min(1) @Max(50) int size) {
+
+        String usuarioLogado = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        if (!adminId.toString().equals(usuarioLogado)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
         Page<OrderHistoryResponseDTO> history = orderService.getOrderHistory(adminId, search, page, size);
         return ResponseEntity.ok(history);
